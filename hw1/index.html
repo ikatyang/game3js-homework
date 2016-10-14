@@ -58,7 +58,7 @@
     <script>
       var scene, camera, renderer;
       var controls, keyboardState, clock;
-      var r2d2, velocity, angle = 0, mass = 1;
+      var r2d2, velocity, mass = 1;
       var power = 0, powerMax = 80, powerMin = 0, powerOn = false;
       
       init();
@@ -118,16 +118,21 @@
       		if (!clock)
       			clock = new THREE.Clock();
       		var delta = clock.getDelta();
+      		
+      		var theta = 0;
+      		if (keyboardState.pressed('left'))
+      			theta = 0.5;
+      		if (keyboardState.pressed('right'))
+      			theta = -0.5;
+      		
+      		var frontDirection = new THREE.Vector3(0, 0, -1);
       		var force = (!powerOn || keyboardState.pressed('space')) ? new THREE.Vector3(0, 0, 0) :
-      			new THREE.Vector3(0, 0, -power).applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
-      		force.add(velocity.clone().multiplyScalar(-0.5));
+      			frontDirection.clone().multiplyScalar(power).applyAxisAngle(new THREE.Vector3(0, 1, 0), r2d2.rotation.y + theta);
+      		force.add(velocity.clone().multiplyScalar(-2.0));
       		velocity.add(force.clone().multiplyScalar(delta / mass));
       		r2d2.position.add(velocity.clone().multiplyScalar(delta));
-      		r2d2.rotation.y = angle;
-      		if (keyboardState.pressed('left'))
-      			angle += 0.05;
-      		if (keyboardState.pressed('right'))
-      			angle -= 0.05;
+      		r2d2.rotation.y = (velocity.angleTo(frontDirection) || 0) * Math.sign(frontDirection.clone().cross(velocity).y);
+      		
       		if (keyboardState.pressed('up'))
       			power += 0.5;
       		if (keyboardState.pressed('down'))
