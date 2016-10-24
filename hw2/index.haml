@@ -1,0 +1,136 @@
+!!! 5
+%html
+	%head
+		%meta(charset='utf-8')
+		%title='Game3js Homework2'
+		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js')
+		%script(src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.min.js')
+		%script(src='../src/OrbitControls.js')
+		%script(src='../src/KeyboardState.js')
+		:css
+			.top, .bottom {
+				position: absolute;
+				width: 100%;
+				padding: 10px;
+				text-align: center;
+			}
+			
+			.top {
+				top: 1em;
+				color: yellow;
+			}
+			
+			.bottom {
+				bottom: 1em;
+				color: blue;
+			}
+			
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+	%body
+		.top='GP_HW2'
+		.bottom
+			.player
+			.camera
+		:javascript
+			var scene, camera, renderer;
+			var clock = new THREE.Clock();
+			var keyboardState = new KeyboardState();
+			var player, playerRadius = 3;
+			var velocity, gravity;
+			var cameraRange = 25;
+			var cameraTop = 71, cameraBottom = cameraTop - 100;
+			var sceneLeft = -50, sceneRight = 450;
+
+			init();
+			animate();
+
+			function init() {
+				scene = new THREE.Scene();
+
+				camera = new THREE.OrthographicCamera(-50, 50, cameraTop, cameraBottom, -10, 100);
+				camera.position.z = 10;
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.setClearColor(0x888888);
+				document.body.appendChild(renderer.domElement);
+				
+				player = new THREE.Mesh(
+					new THREE.CircleGeometry(playerRadius, 12),
+					new THREE.MeshBasicMaterial({ color: 'yellow', wireframe: true }));
+				player.position.set(-20, 40, 0);
+				scene.add(player);
+				
+				var loader = new THREE.TextureLoader();
+				loader.load('../src/images/repeatableBackground.jpg', function (texture) {
+					texture.wrapS = THREE.RepeatWrapping;
+					texture.wrapT = THREE.RepeatWrapping;
+					texture.repeat.set(5, 1);
+					background = new THREE.Mesh(
+						new THREE.PlaneGeometry(500, 100),
+						new THREE.MeshBasicMaterial({ map: texture }));
+					background.position.set(200, 21, -1);
+					scene.add(background);
+				});
+				
+				velocity = new THREE.Vector3(0, 0, 0);
+				gravity = new THREE.Vector3(0, -98, 0)
+				
+				window.addEventListener('resize', onWindowResize, false);
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
+			
+			function updateCamera() {
+				if (player.position.x - camera.position.x < -cameraRange)
+					camera.position.x = player.position.x + cameraRange;
+				if (player.position.x - camera.position.x > cameraRange)
+					camera.position.x = player.position.x - cameraRange;
+				if (camera.position.x < sceneLeft + 50)
+					camera.position.x = sceneLeft + 50;
+				if (camera.position.x > sceneRight - 50)
+					camera.position.x = sceneRight - 50;
+				$('.player').text('player: ' + Math.round(player.position.x));
+				$('.camera').text('camera: ' + Math.round(camera.position.x));
+			}
+
+			function animate() {
+				var delta = clock.getDelta();
+				var force = gravity.clone();
+				if (player.position.y < playerRadius) {
+					player.position.y = playerRadius;
+					velocity.y *= -0.2;
+					force.sub(gravity);
+				}
+				if (player.position.y > cameraTop - playerRadius) {
+					player.position.y = cameraTop - playerRadius;
+					velocity.y = 0;
+				}
+				if (player.position.x < sceneLeft + playerRadius)
+					player.position.x = sceneLeft + playerRadius;
+				if (player.position.x > sceneRight - playerRadius)
+					player.position.x = sceneRight - playerRadius;
+				if (keyboardState.down('up'))
+					velocity.y += 70;
+				var direction = 0;
+				if (keyboardState.pressed('left'))
+					direction = -1;
+				if (keyboardState.pressed('right'))
+					direction = 1;
+				var distance = 20 * delta * direction;
+				player.position.x += distance;
+				player.rotation.z -= distance / (2 * Math.PI * playerRadius);
+				velocity.add(force.clone().multiplyScalar(delta));
+				player.position.add(velocity.clone().multiplyScalar(delta));
+				updateCamera();
+				keyboardState.update();
+				requestAnimationFrame(animate);
+				renderer.render(scene, camera);
+			}
