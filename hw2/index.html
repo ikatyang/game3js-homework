@@ -42,7 +42,7 @@
       var clock = new THREE.Clock();
       var keyboardState = new KeyboardState();
       var player, playerRadius = 3;
-      var velocity, gravity;
+      var velocity, gravity, mass = 1;
       var cameraRange = 25;
       var cameraTop = 71, cameraBottom = cameraTop - 100;
       var sceneLeft = -50, sceneRight = 450;
@@ -112,26 +112,25 @@
       		velocity.y *= -0.2;
       		force.sub(gravity);
       	}
-      	if (player.position.y > cameraTop - playerRadius) {
-      		player.position.y = cameraTop - playerRadius;
-      		velocity.y = 0;
-      	}
+      	if (player.position.x < sceneLeft + playerRadius || player.position.x > sceneRight - playerRadius)
+      		velocity.x *= -0.5;
       	if (player.position.x < sceneLeft + playerRadius)
       		player.position.x = sceneLeft + playerRadius;
       	if (player.position.x > sceneRight - playerRadius)
       		player.position.x = sceneRight - playerRadius;
-      	if (keyboardState.down('up'))
-      		velocity.y += 70;
-      	var direction = 0;
-      	if (keyboardState.pressed('left'))
-      		direction = -1;
-      	if (keyboardState.pressed('right'))
-      		direction = 1;
-      	var distance = 20 * delta * direction;
-      	player.position.x += distance;
-      	player.rotation.z -= distance / (2 * Math.PI * playerRadius);
-      	velocity.add(force.clone().multiplyScalar(delta));
-      	player.position.add(velocity.clone().multiplyScalar(delta));
+      	if (Math.abs(player.position.y - playerRadius) < 0.1) {
+      		if (keyboardState.down('up'))
+      			velocity.y += 70;
+      		if (keyboardState.pressed('left'))
+      			force.x -= 50;
+      		if (keyboardState.pressed('right'))
+      			force.x += 50;
+      		force.add(velocity.clone().multiplyScalar(-1.5).setY(0));
+      	}
+      	velocity.add(force.clone().multiplyScalar(delta / mass));
+      	var distance = velocity.clone().multiplyScalar(delta);
+      	player.position.add(distance);
+      	player.rotation.z -= distance.x / playerRadius;
       	updateCamera();
       	keyboardState.update();
       	requestAnimationFrame(animate);
