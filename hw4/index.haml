@@ -179,6 +179,36 @@
 				},
 				
 			});
+			
+			function AgentGeometry(width, height, depth) {
+				
+				THREE.Geometry.call(this);
+				
+				this.type = 'AgentGeometry';
+				
+				this.parameters = {
+					width: width,
+					height: height,
+					depth: depth,
+				};
+				
+				this.vertices.push(
+					new THREE.Vector3(0, 0, depth / 2),
+					new THREE.Vector3(width / 2, 0, -depth / 2),
+					new THREE.Vector3(-width / 2, 0, -depth / 2),
+					new THREE.Vector3(0, height, -depth / 2));
+				
+				this.faces.push(
+					new THREE.Face3(1, 3, 2),
+					new THREE.Face3(0, 3, 1),
+					new THREE.Face3(3, 0, 2),
+					new THREE.Face3(1, 2, 0));
+				
+				this.computeFaceNormals();
+				this.computeVertexNormals();
+			}
+			AgentGeometry.prototype = Object.create(THREE.Geometry.prototype);
+			AgentGeometry.prototype.constructor = AgentGeometry;
 		:javascript
 			var scene, camera, renderer, controls;
 			var agents, clock, target, obstacles;
@@ -313,7 +343,7 @@
 			function addAgent() {
 				
 				var agent = new Agent(
-					new THREE.BoxGeometry(10, 10, 30),
+					new AgentGeometry(15, 10, 30),
 					new THREE.MeshNormalMaterial({ wireframe: true }));
 				agent.target = target.position;
 				agent.obstacles = obstacles;
