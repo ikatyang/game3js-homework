@@ -216,6 +216,7 @@
 			var agentCount = 5, obstacleCount = 10;
 			var autoRestart = true;
 			var groundWidth = 400;
+			var showHelper = true;
 			
 			init();
 			animate();
@@ -287,6 +288,17 @@
 						addObstacle();
 					}
 				});
+				gui.add(window, 'showHelper').onChange(function () {
+					
+					for (var i = 0; i < agents.length; i++) {
+						
+						var agent = agents[i];
+						
+						agent.maxSeeAheadLine.material.visible = showHelper;
+						agent.maxSeeAheadPoint.material.visible = showHelper;
+						agent.avoidForceLine.material.visible = showHelper;
+					}
+				});
 				
 				window.addEventListener('resize', onWindowResize, false);
 				document.addEventListener('mouseup', onDocumentMouseUp, false);
@@ -349,6 +361,10 @@
 				agent.obstacles = obstacles;
 				agents.push(agent);
 				scene.add(agent);
+				
+				agent.maxSeeAheadLine.material.visible = showHelper;
+				agent.maxSeeAheadPoint.material.visible = showHelper;
+				agent.avoidForceLine.material.visible = showHelper;
 				
 				var spriteText = new THREE.SpriteText2D('123', {
 					align: THREE.textAlign.center,
