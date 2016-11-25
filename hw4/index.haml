@@ -392,9 +392,9 @@
 				});
 				
 				window.addEventListener('resize', onWindowResize, false);
-				document.addEventListener('mouseup', onDocumentMouseUp, false);
-				document.addEventListener('mousedown', onDocumentMouseDown, false);
-				document.addEventListener('mousemove', onDocumentMouseMove, false);
+				renderer.domElement.addEventListener('mouseup', onMouseUp, false);
+				renderer.domElement.addEventListener('mousedown', onMouseDown, false);
+				renderer.domElement.addEventListener('mousemove', onMouseMove, false);
 			}
 			
 			function onWindowResize() {
@@ -403,17 +403,17 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 			}
 			
-			function onDocumentMouseUp(event) {
-				if (renderer.domElement.style.cursor === 'pointer' && onDocumentMouseDown.clientX === event.clientX && onDocumentMouseDown.clientY === event.clientY && intersects.length > 0) 
+			function onMouseUp(event) {
+				if (renderer.domElement.style.cursor === 'pointer' && onMouseDown.clientX === event.clientX && onMouseDown.clientY === event.clientY && intersects.length > 0) 
 					target.position.copy(intersects[0].point.clone().setY(0));
 			}
 			
-			function onDocumentMouseDown(event) {
-				onDocumentMouseDown.clientX = event.clientX;
-				onDocumentMouseDown.clientY = event.clientY;
+			function onMouseDown(event) {
+				onMouseDown.clientX = event.clientX;
+				onMouseDown.clientY = event.clientY;
 			}
 			
-			function onDocumentMouseMove(event) {
+			function onMouseMove(event) {
 				
 				var mouse = new THREE.Vector2(
 					(event.clientX / window.innerWidth) * 2 - 1,
