@@ -43,13 +43,22 @@
       	this.maxSpeed = 50;
       	
       	this.obstacles = [];
+      	this.neighbors = [];
+      	
+      	this.alignmentWeight = 1;
+      	this.cohesionWeight = 1;
+      	this.separationWeight = 1;
+      	
+      	this.groupSteer = false;
       	
       	this.add(this.maxSeeAheadLine = createLine(0x33ff33));
       	this.add(this.maxSeeAheadPoint = createSphere('red'));
       	this.add(this.avoidForceLine = createLine('green'));
+      	this.add(this.neighborCircle = createCircle('yellow'));
       	
       	this.maxSeeAhead = 50;
       	this.maxAvoidForce = 60;
+      	this.neighborRadius = 70;
       	
       	this.avoidanceElapsed = 0;
       	this.avoidanceDelta = 0.5;
@@ -68,6 +77,14 @@
       		
       		return new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshBasicMaterial({ color: color }));
       	}
+      	
+      	function createCircle(color) {
+      		
+      		var circle = new THREE.Mesh(new THREE.CircleGeometry(1, 32, Math.PI, Math.PI), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.1, depthTest: false }));
+      		circle.rotation.x = -Math.PI / 2;
+      		
+      		return circle;
+      	}
       }
       Agent.prototype = Object.assign(Object.defineProperties(Object.create(THREE.Mesh.prototype), {
       	
@@ -80,6 +97,18 @@
       			this.maxSeeAheadLine.geometry.vertices[1].z = value;
       			this.maxSeeAheadLine.geometry.verticesNeedUpdate = true;
       			this.maxSeeAheadPoint.position.z = value;
+      		},
+      	},
+      	
+      	neighborRadius: {
+      		get: function () {
+      			return this._neighborRadius;
+      		},
+      		set: function (value) {
+      			this._neighborRadius = value;
+      			for (var i = 0; i < this.neighborCircle.geometry.vertices.length; i++)
+      				this.neighborCircle.geometry.vertices[i].setLength(value);
+      			this.neighborCircle.geometry.verticesNeedUpdate = true;
       		},
       	},
       	
@@ -144,6 +173,38 @@
       		return avoidForce;
       	},
       	
+      	getCloseEnoughNeibors: function () {
+      		var scope = this;
+      		return this.neighbors.filter(function (neighbor) {
+      			var offset = neighbor.position.clone().sub(scope.position);
+      			var distance = offset.length();
+      			return (neighbor !== scope) && (distance < scope.neighborRadius) && (offset.dot(scope.velocity) > 0);
+      		});
+      	},
+      	
+      	getAlignment: function (neighbors) {
+      		var alignment = new THREE.Vector3(0, 0, 0);
+      		for (var i = 0; i < neighbors.length; i++)
+      			alignment.add(neighbors[i].velocity);
+      		return alignment.normalize();
+      	},
+      	
+      	getCohesion: function (neighbors) {
+      		var cohesion = new THREE.Vector3(0, 0, 0);
+      		if (neighbors.length === 0)
+      			return cohesion;
+      		for (var i = 0; i < neighbors.length; i++)
+      			cohesion.add(neighbors[i].position);
+      		return cohesion.divideScalar(neighbors.length).sub(this.position).normalize();
+      	},
+      	
+      	getSeparation: function (neighbors) {
+      		var separation = new THREE.Vector3(0, 0, 0);
+      		for (var i = 0; i < neighbors.length; i++)
+      			separation.add(neighbors[i].position.clone().sub(this.position));
+      		return separation.negate().normalize();
+      	},
+      	
       	update: function (delta) {
       		
       		var force = new THREE.Vector3(0, 0, 0);
@@ -161,6 +222,19 @@
       		
       		force.add(seekForce).add(avoidForce).clampLength(0, this.maxForce);
       		this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
+      		
+      		if (this.groupSteer) {
+      			
+      			var speed = this.velocity.length();
+      			var neighbors = this.getCloseEnoughNeibors();
+      			
+      			this.velocity
+      				.addScaledVector(this.getAlignment(neighbors), this.alignmentWeight)
+      				.addScaledVector(this.getCohesion(neighbors), this.cohesionWeight)
+      				.addScaledVector(this.getSeparation(neighbors), this.separationWeight)
+      				.setLength(speed);
+      		} 
+      		
       		this.position.addScaledVector(this.velocity, delta);
       		
       		var axis = this.front.clone().cross(this.velocity).normalize();
@@ -219,7 +293,7 @@
       var agentCount = 5, obstacleCount = 10;
       var autoRestart = true;
       var groundWidth = 400;
-      var showHelper = true;
+      var showHelper = true, groupSteer = false;
       
       init();
       animate();
@@ -291,6 +365,16 @@
       			addObstacle();
       		}
       	});
+      	gui.add(window, 'groupSteer').onChange(function () {
+      		
+      		for (var i = 0; i < agents.length; i++) {
+      			
+      			var agent = agents[i];
+      			
+      			agent.groupSteer = groupSteer;
+      			agent.neighborCircle.material.visible = showHelper && groupSteer;
+      		}
+      	});
       	gui.add(window, 'showHelper').onChange(function () {
       		
       		for (var i = 0; i < agents.length; i++) {
@@ -300,6 +384,7 @@
       			agent.maxSeeAheadLine.material.visible = showHelper;
       			agent.maxSeeAheadPoint.material.visible = showHelper;
       			agent.avoidForceLine.material.visible = showHelper;
+      			agent.neighborCircle.material.visible = showHelper && groupSteer;
       		}
       	});
       	
@@ -362,12 +447,15 @@
       		new THREE.MeshNormalMaterial({ wireframe: true }));
       	agent.target = target.position;
       	agent.obstacles = obstacles;
+      	agent.neighbors = agents;
       	agents.push(agent);
       	scene.add(agent);
       	
+      	agent.groupSteer = groupSteer;
       	agent.maxSeeAheadLine.material.visible = showHelper;
       	agent.maxSeeAheadPoint.material.visible = showHelper;
       	agent.avoidForceLine.material.visible = showHelper;
+      	agent.neighborCircle.material.visible = showHelper && groupSteer;
       	
       	var spriteText = new THREE.SpriteText2D('123', {
       		align: THREE.textAlign.center,
@@ -427,7 +515,6 @@
       
       function animate() {
       	var delta = clock.getDelta();
-      	
       	for (var i = 0; i < agents.length; i++) {
       		
       		var agent = agents[i];
