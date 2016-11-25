@@ -291,6 +291,7 @@
 			var autoRestart = true;
 			var groundWidth = 400;
 			var showHelper = true, groupSteer = false;
+			var animated = true;
 			
 			init();
 			animate();
@@ -342,6 +343,7 @@
 				
 				var gui = new dat.GUI();
 				
+				gui.add(window, 'animated');
 				gui.add(window, 'autoRestart');
 				gui.add(window, 'agentCount', 1, 20).step(1).onChange(function () {
 					while (agentCount < agents.length) {
@@ -512,17 +514,19 @@
 
 			function animate() {
 				var delta = clock.getDelta();
-				for (var i = 0; i < agents.length; i++) {
-					
-					var agent = agents[i];
-					
-					agent.update(delta);
-					agent.spriteText.text = agent.arrival ? 'Arrival' : agent.avoidance ? 'Avoidance' : 'Seek';
-					
-					if (autoRestart && agent.position.clone().sub(target.position).length() < 10) {
-						resetAgents();
-						break;
-					}	
+				if (animated) {
+					for (var i = 0; i < agents.length; i++) {
+						
+						var agent = agents[i];
+						
+						agent.update(delta);
+						agent.spriteText.text = agent.arrival ? 'Arrival' : agent.avoidance ? 'Avoidance' : 'Seek';
+						
+						if (autoRestart && agent.position.clone().sub(target.position).length() < 10) {
+							resetAgents();
+							break;
+						}	
+					}
 				}
 				controls.update();
 				requestAnimationFrame(animate);
