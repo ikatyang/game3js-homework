@@ -290,7 +290,7 @@
 			var agentCount = 5, obstacleCount = 10;
 			var autoRestart = true;
 			var groundWidth = 400;
-			var showHelper = true, groupSteer = false;
+			var showHelper = true, groupSteer = false, showSpriteText = true;
 			var animated = true;
 			
 			init();
@@ -386,6 +386,10 @@
 						agent.neighborCircle.material.visible = showHelper && groupSteer;
 					}
 				});
+				gui.add(window, 'showSpriteText').onChange(function () {
+					for (var i = 0; i < agents.length; i++)
+						agents[i].spriteText.visible = showSpriteText;
+				});
 				
 				window.addEventListener('resize', onWindowResize, false);
 				document.addEventListener('mouseup', onDocumentMouseUp, false);
@@ -463,6 +467,7 @@
 					antialias: true,
 				});
 				spriteText.position.y = 30;
+				spriteText.visible = showSpriteText;
 				agent.add(agent.spriteText = spriteText);
 			}
 			
