@@ -45,11 +45,11 @@
       	this.obstacles = [];
       	this.neighbors = [];
       	
-      	this.alignmentWeight = 1;
-      	this.cohesionWeight = 1;
-      	this.separationWeight = 1;
+      	this.maxCohesionForce = 5;
+      	this.maxAlignmentForce = 5;
+      	this.maxSeparationForce = 30;
       	
-      	this.groupSteer = false;
+      	this.groupSteerForce = new THREE.Vector3(0, 0, 0);
       	
       	this.add(this.maxSeeAheadLine = createLine(0x33ff33));
       	this.add(this.maxSeeAheadPoint = createSphere('red'));
@@ -57,8 +57,8 @@
       	this.add(this.neighborCircle = createCircle('yellow'));
       	
       	this.maxSeeAhead = 50;
-      	this.maxAvoidForce = 60;
-      	this.neighborRadius = 70;
+      	this.maxAvoidForce = 120;
+      	this.neighborRadius = 50;
       	
       	this.avoidanceElapsed = 0;
       	this.avoidanceDelta = 0.5;
@@ -80,7 +80,7 @@
       	
       	function createCircle(color) {
       		
-      		var circle = new THREE.Mesh(new THREE.CircleGeometry(1, 32, Math.PI, Math.PI), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.1, depthTest: false }));
+      		var circle = new THREE.Mesh(new THREE.CircleGeometry(1, 32, Math.PI * (3 / 4), Math.PI * (3 / 2)), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.1, depthTest: false }));
       		circle.rotation.x = -Math.PI / 2;
       		
       		return circle;
@@ -178,7 +178,7 @@
       		return this.neighbors.filter(function (neighbor) {
       			var offset = neighbor.position.clone().sub(scope.position);
       			var distance = offset.length();
-      			return (neighbor !== scope) && (distance < scope.neighborRadius) && (offset.dot(scope.velocity) > 0);
+      			return (neighbor !== scope) && (distance < scope.neighborRadius) && (offset.dot(scope.velocity) > Math.cos(Math.PI * (3 / 4)));
       		});
       	},
       	
@@ -205,6 +205,24 @@
       		return separation.negate().normalize();
       	},
       	
+      	computeGroupSteerForce: function () {
+      		
+      		var neighbors = this.getCloseEnoughNeibors();
+      		var groupSteerForce = new THREE.Vector3(0, 0, 0);
+      		
+      		var cohesion = this.getCohesion(neighbors);
+      		var alignment = this.getAlignment(neighbors);
+      		var separation = this.getSeparation(neighbors);
+      		
+      		groupSteerForce
+      			.addScaledVector(cohesion, this.maxCohesionForce)
+      			.addScaledVector(alignment, this.maxAlignmentForce)
+      			.addScaledVector(separation, this.maxSeparationForce);
+      		
+      		this.groupSteerForce.copy(groupSteerForce);
+      		this.neighborCount = neighbors.length;
+      	},
+      	
       	update: function (delta) {
       		
       		var force = new THREE.Vector3(0, 0, 0);
@@ -220,20 +238,14 @@
       			this.avoidance = false;
       		}
       		
-      		force.add(seekForce).add(avoidForce).clampLength(0, this.maxForce);
-      		this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
+      		if (this.groupSteerForce.length() > 0) {
+      			
+      			force.add(this.groupSteerForce);
+      			this.groupSteerForce.set(0, 0, 0);
+      		}
       		
-      		if (this.groupSteer) {
-      			
-      			var speed = this.velocity.length();
-      			var neighbors = this.getCloseEnoughNeibors();
-      			
-      			this.velocity
-      				.addScaledVector(this.getAlignment(neighbors), this.alignmentWeight)
-      				.addScaledVector(this.getCohesion(neighbors), this.cohesionWeight)
-      				.addScaledVector(this.getSeparation(neighbors), this.separationWeight)
-      				.setLength(speed);
-      		} 
+      		force.add(seekForce).add(avoidForce).setY(0).clampLength(0, this.maxForce);
+      		this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
       		
       		this.position.addScaledVector(this.velocity, delta);
       		
@@ -463,7 +475,7 @@
       	agent.avoidForceLine.material.visible = showHelper;
       	agent.neighborCircle.material.visible = showHelper && groupSteer;
       	
-      	var spriteText = new THREE.SpriteText2D('123', {
+      	var spriteText = new THREE.SpriteText2D(' ', {
       		align: THREE.textAlign.center,
       		font: '12px Courier',
       		fillStyle: '#000000',
@@ -518,11 +530,18 @@
       	do {
       		agent.position.copy(getRandomPosition(agent.geometry.boundingSphere.radius));
       	} while (agent.position.clone().sub(target.position).length() < 100);
+      	
+      	for (var i = 0; i < agents.length; i++)
+      		if (agents[i] !== agent && agents[i].position.clone().sub(agent.position).length() < 40)
+      			return resetAgent(agent);
       }
       
       function animate() {
       	var delta = clock.getDelta();
       	if (animated) {
+      		if (groupSteer)
+      			for (var i = 0; i < agents.length; i++)
+      				agents[i].computeGroupSteerForce();
       		for (var i = 0; i < agents.length; i++) {
       			
       			var agent = agents[i];
@@ -530,7 +549,7 @@
       			agent.update(delta);
       			agent.spriteText.text = agent.arrival ? 'Arrival' : agent.avoidance ? 'Avoidance' : 'Seek';
       			
-      			if (autoRestart && agent.position.clone().sub(target.position).length() < 10) {
+      			if (autoRestart && agent.position.clone().sub(target.position).length() < 20) {
       				resetAgents();
       				break;
       			}	
