@@ -80,7 +80,7 @@
       	
       	function createCircle(color) {
       		
-      		var circle = new THREE.Mesh(new THREE.CircleGeometry(1, 32, Math.PI * (3 / 4), Math.PI * (3 / 2)), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.1, depthTest: false }));
+      		var circle = new THREE.Mesh(new THREE.CircleGeometry(1, 32, Math.PI * (5 / 6), Math.PI * (4 / 3)), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.1, depthTest: false }));
       		circle.rotation.x = -Math.PI / 2;
       		
       		return circle;
@@ -178,7 +178,7 @@
       		return this.neighbors.filter(function (neighbor) {
       			var offset = neighbor.position.clone().sub(scope.position);
       			var distance = offset.length();
-      			return (neighbor !== scope) && (distance < scope.neighborRadius) && (offset.dot(scope.velocity) > Math.cos(Math.PI * (3 / 4)));
+      			return (neighbor !== scope) && (distance < scope.neighborRadius) && (offset.dot(scope.velocity) > Math.cos(Math.PI * (2 / 3)));
       		});
       	},
       	
