@@ -200,9 +200,11 @@
       	
       	getSeparation: function (neighbors) {
       		var separation = new THREE.Vector3(0, 0, 0);
-      		for (var i = 0; i < neighbors.length; i++)
-      			separation.add(neighbors[i].position.clone().sub(this.position));
-      		return separation.negate().normalize();
+      		for (var i = 0; i < neighbors.length; i++) {
+      			var offset = this.position.clone().sub(neighbors[i].position);
+      			separation.add(offset.clone().setLength(1 / offset.length()));
+      		}
+      		return separation.normalize();
       	},
       	
       	computeGroupSteerForce: function () {
