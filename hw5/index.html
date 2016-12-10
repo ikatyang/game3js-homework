@@ -203,6 +203,21 @@
       	ballisticMissile.position.set(-300, 0, -300);
       	ballisticMissile.target.set(300, 200, 300);
       	scene.add(ballisticMissile);
+      	
+      	// building
+      	var building = createBuilding(50, ballisticMissile.target.y, 50);
+      	building.position.copy(ballisticMissile.target.clone().setY(building.position.y));
+      	scene.add(building);
+      }
+      
+      function createBuilding(width, height, depth) {
+      
+      	var building = new THREE.Mesh(
+      		new THREE.BoxGeometry(width, height, depth),
+      		new THREE.MeshNormalMaterial())
+      	building.position.y = height / 2;
+      	
+      	return building;
       }
       
       function onWindowResize() {
