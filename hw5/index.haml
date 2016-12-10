@@ -204,6 +204,26 @@
 				var building = createBuilding(50, ballisticMissile.target.y, 50);
 				building.position.copy(ballisticMissile.target.clone().setY(building.position.y));
 				scene.add(building);
+				
+				// balloons
+				var obstacles = [];
+				for (var i = 0; i < 10; i++) {
+					
+					var offset = new THREE.Vector3(
+						Math.random() * 200 - 100,
+						Math.random() * 100,
+						Math.random() * 200 - 100);
+					
+					var balloon = createBalloon(20, 40, 20);
+					balloon.position.copy(ballisticMissile.target).add(offset);
+					scene.add(balloon);
+					
+					if (!balloon.geometry.boundingSphere)
+						balloon.geometry.computeBoundingSphere();
+					
+					obstacles.push(balloon.geometry.boundingSphere.clone().translate(balloon.position));
+				}
+				ballisticMissile.obstacles = obstacles;
 			}
 			
 			function createBuilding(width, height, depth) {
@@ -214,6 +234,15 @@
 				building.position.y = height / 2;
 				
 				return building;
+			}
+			
+			function createBalloon(width, height, depth) {
+				
+				var balloon = new THREE.Mesh(
+					new THREE.BoxGeometry(width, height, depth),
+					new THREE.MeshNormalMaterial());
+				
+				return balloon;
 			}
 			
 			function onWindowResize() {
