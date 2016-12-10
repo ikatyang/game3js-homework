@@ -397,7 +397,7 @@
 			var scene, camera, renderer, controls;
 			var clock = new THREE.Clock();
 			var ballisticMissile;
-			var explosion;
+			var explosion, explosionables = [];
 			
 			init();
 			animate();
@@ -432,6 +432,8 @@
 				building.position.copy(ballisticMissile.target.clone().setY(building.position.y));
 				scene.add(building);
 				
+				explosionables.push(building);
+				
 				// balloons
 				var obstacles = [];
 				for (var i = 0; i < 10; i++) {
@@ -444,6 +446,8 @@
 					var balloon = createBalloon(20, 40, 20);
 					balloon.position.copy(ballisticMissile.target).add(offset);
 					scene.add(balloon);
+					
+					explosionables.push(balloon);
 					
 					if (!balloon.geometry.boundingSphere)
 						balloon.geometry.computeBoundingSphere();
