@@ -249,6 +249,92 @@
 	%body
 		.top='GP_HW5'
 		:javascript
+			function OBB(mesh) {
+				
+				if (!mesh.geometry.boundingBox)
+					mesh.geometry.computeBoundingBox();
+				
+				this.center = mesh.position.clone().add(mesh.geometry.boundingBox.getCenter());
+				this.size = mesh.geometry.boundingBox.getSize();
+				
+				var xAxis = new THREE.Vector3();
+				var yAxis = new THREE.Vector3();
+				var zAxis = new THREE.Vector3();
+				mesh.matrix.extractBasis(xAxis, yAxis, zAxis);
+				this.axes = [xAxis, yAxis, zAxis];
+			}
+			Object.assign(OBB.prototype, {
+				
+				intersectsOBB: (function () {
+					
+					function getProjectLength(vector, axis) {
+						var project = vector.clone().projectOnVector(axis);
+						var projectLengths = project.divide(axis).toArray();
+						for (var i = 0; i < projectLengths.length; i++)
+							if (isFinite(projectLengths[i]))
+								return projectLengths[i];
+						return 0;
+					}
+					
+					function getOBBVertices(obb) {
+						var vertices = [];
+						for (var i = -0.5; i <= 0.5; i++)
+							for (var j = -0.5; j <= 0.5; j++)
+								for (var k = -0.5; k <= 0.5; k++)
+									vertices.push(obb.center.clone()
+										.addScaledVector(obb.axes[0], obb.size.x * i)
+										.addScaledVector(obb.axes[1], obb.size.y * j)
+										.addScaledVector(obb.axes[2], obb.size.z * k));
+						return vertices;
+					}
+					
+					function satTest(obb1, obb2, axis) {
+						
+						var center1 = getProjectLength(obb1.center, axis);
+						var center2 = getProjectLength(obb2.center, axis);
+						
+						var isLeftL = (center1 < center2);
+						
+						var centerL = isLeftL ? center1 : center2;
+						var centerR = isLeftL ? center2 : center1;
+						
+						var verticesL = isLeftL ? getOBBVertices(obb1) : getOBBVertices(obb2);
+						var verticesR = isLeftL ? getOBBVertices(obb2) : getOBBVertices(obb1);
+						
+						var vertexLR = -Number.MAX_VALUE;
+						for (var i = 0; i < verticesL.length; i++)
+							vertexLR = Math.max(vertexLR, getProjectLength(verticesL[i], axis));
+							
+						var vertexRL = Number.MAX_VALUE;
+						for (var i = 0; i < verticesR.length; i++)
+							vertexRL = Math.min(vertexRL, getProjectLength(verticesR[i], axis));
+							
+						var lengthL = vertexLR - centerL;
+						var lengthR = centerR - vertexRL;
+						var lengthC = centerR - centerL;
+						
+						return (lengthL + lengthR >= lengthC);
+					}
+					
+					return function (obb) {
+						
+						var axes = [].concat(this.axes, obb.axes);
+						
+						for (var i = 0; i < this.axes.length; i++)
+							for (var j = 0; j < obb.axes.length; j++)
+								axes.push(this.axes[i].clone().cross(obb.axes[j]).normalize());
+						
+						for (var i = 0; i < axes.length; i++)
+							if (!satTest(this, obb, axes[i]))
+								return false;
+						
+						return true;
+					};
+					
+				})(),
+				
+			});
+		:javascript
 			function BallisticMissileGeometry(radius, height, heightRatio, radiusSegments) {
 				
 				THREE.Geometry.call(this);
@@ -531,6 +617,31 @@
 				return explosion;
 			}
 			
+			function checkCollision() {
+				
+				var obb = new OBB(ballisticMissile);
+				
+				for (var i = 0; i < explosionables.length; i++) {
+				
+					var explosionable = explosionables[i];
+					
+					if (!explosionable.exploded) {
+						
+						var explosionablesOBB = new OBB(explosionable);
+						if (obb.intersectsOBB(explosionablesOBB)) {
+							
+							ballisticMissile.exploded = true;
+							ballisticMissile.visible = false;
+							
+							explosion.position.copy(ballisticMissile.position);
+							explosion.show();
+							
+							return;
+						}
+					}
+				}
+			}
+			
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
@@ -540,6 +651,8 @@
 			function animate() {
 				var delta = clock.getDelta();
 				ballisticMissile.update(delta);
+				if (!ballisticMissile.exploded)
+					checkCollision();
 				explosion.update(delta);
 				controls.update();
 				requestAnimationFrame(animate);
