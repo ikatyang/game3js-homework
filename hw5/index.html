@@ -61,6 +61,117 @@
       BallisticMissileGeometry.prototype.constructor = BallisticMissileGeometry;
     </script>
     <script>
+      function BallisticMissile(ballisticMissileGeometry, material) {
+      
+      	THREE.Mesh.call(this, ballisticMissileGeometry, material);
+      	
+      	this.mass = 1;
+      	
+      	this.velocity = new THREE.Vector3(0, 0, 0);
+      	this.target = new THREE.Vector3(0, 0, 0);
+      	
+      	this.maxForce = 50;
+      	this.maxSpeed = 50;
+      	
+      	this.maxSeeAhead = 50;
+      	this.maxAvoidForce = 120;
+      	
+      	this.obstacles = [];
+      	
+      	this.enoughHeight = 400;
+      	this.enoughClosed = 400;
+      	
+      	this.state = 'up';
+      }
+      BallisticMissile.prototype = Object.assign(Object.create(THREE.Mesh.prototype), {
+      	
+      	constructor: BallisticMissile,
+      	
+      	getSeekForce: function () {
+      		return this.getDirection()
+      			.setLength(this.maxSpeed)
+      			.sub(this.velocity);
+      	},
+      	
+      	getAvoidForce: function () {
+      		
+      		var avoidForce = new THREE.Vector3(0, 0, 0);
+      		
+      		var ahead = this.maxSeeAhead * (this.velocity.length() / this.maxSpeed);
+      		
+      		var offsetProjLengthMin = Number.MAX_VALUE;
+      		for (var i = 0; i < this.obstacles.length; i++) {
+      			
+      			var obstacle = this.obstacles[i];
+      			
+      			var offset = obstacle.center.clone().sub(this.position);
+      			var offsetProj = offset.clone().projectOnVector(this.velocity);
+      			var offsetProjLength = offsetProj.length();
+      			var steerOffset = offsetProj.clone().sub(offset);
+      			
+      			var inFront = (offset.clone().dot(this.velocity) > 0);
+      			var needBlock = (steerOffset.length() < obstacle.radius + this.geometry.parameters.radius);
+      			var closeEnough = (offsetProjLength < ahead + obstacle.radius);
+      			
+      			if (inFront && needBlock && closeEnough && offsetProjLength < offsetProjLengthMin) {
+      				
+      				offsetProjLengthMin = offsetProjLength;
+      				avoidForce.copy(steerOffset.clone().setLength(this.maxAvoidForce));
+      			}
+      		}
+      		
+      		return avoidForce;
+      	},
+      	
+      	getDirection: function () {
+      		switch (this.state) {
+      			case 'up':
+      				return this.axisY.clone();
+      			case 'front':
+      				return this.target.clone().sub(this.position).setY(0);
+      			default:
+      				return this.target.clone().sub(this.position);
+      		}
+      	},
+      	
+      	updateAxisY: function () {
+      		this.updateMatrixWorld();
+      		this.axisY = this.localToWorld(new THREE.Vector3(0, 1, 0)).sub(this.position);
+      	},
+      	
+      	updateState: function () {
+      		if (this.state === 'up' && this.position.y >= this.enoughHeight)
+      			this.state = 'front';
+      		if (this.state === 'front' && this.position.clone().sub(this.target).setY(0).length() < this.enoughClosed)
+      			this.state = 'down';
+      	},
+      	
+      	update: function (delta) {
+      		
+      		this.updateAxisY();
+      		this.updateState();
+      		
+      		var force = new THREE.Vector3(0, 0, 0);
+      		
+      		var seekForce = this.getSeekForce();
+      		var avoidForce = this.getAvoidForce();
+      		
+      		force.add(seekForce).add(avoidForce).clampLength(0, this.maxForce);
+      		
+      		this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
+      		this.position.addScaledVector(this.velocity, delta);
+      		
+      		var xAxis = this.axisY.clone().cross(this.velocity).normalize();
+      		if (xAxis.length() > 0) {
+      			var yAxis = this.velocity.clone().normalize();
+      			var zAxis = xAxis.clone().cross(yAxis).normalize();
+      			this.rotation.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
+      		}
+      	},
+      	
+      });
+    </script>
+    <script>
       var scene, camera, renderer, controls;
       var clock = new THREE.Clock();
       var ballisticMissile;
@@ -86,9 +197,11 @@
       	scene.add(gridXZ);
       	
       	// ballisticMissile
-      	ballisticMissile = new THREE.Mesh(
+      	ballisticMissile = new BallisticMissile(
       		new BallisticMissileGeometry(10, 40, 2 / 3, 32),
       		new THREE.MeshNormalMaterial());
+      	ballisticMissile.position.set(-300, 0, -300);
+      	ballisticMissile.target.set(300, 200, 300);
       	scene.add(ballisticMissile);
       }
       
@@ -100,6 +213,7 @@
       
       function animate() {
       	var delta = clock.getDelta();
+      	ballisticMissile.update(delta);
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
