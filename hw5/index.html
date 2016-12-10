@@ -25,8 +25,45 @@
   <body>
     <div class='top'>GP_HW5</div>
     <script>
+      function BallisticMissileGeometry(radius, height, heightRatio, radiusSegments) {
+      	
+      	THREE.Geometry.call(this);
+      	
+      	this.type = 'BallisticMissileGeometry';
+      	
+      	radiusSegments = (radiusSegments !== undefined) ? radiusSegments : 8;
+      	
+      	this.parameters = {
+      		radius: radius,
+      		height: height,
+      		heightRatio: heightRatio,
+      		radiusSegments: radiusSegments,
+      	};
+      	
+      	var headHeight = height / (heightRatio + 1) * heightRatio;
+      	var bodyHeight = height / (heightRatio + 1);
+      	
+      	var head = new THREE.CylinderGeometry(0, radius, headHeight, radiusSegments);
+      	this.merge(head, new THREE.Matrix4().compose(
+      		new THREE.Vector3(0, height / 2 - headHeight / 2, 0),
+      		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+      		new THREE.Vector3(1, 1, 1)
+      	), 0);
+      	
+      	var body = new THREE.CylinderGeometry(radius, radius, bodyHeight, radiusSegments);
+      	this.merge(body, new THREE.Matrix4().compose(
+      		new THREE.Vector3(0, -height / 2 + bodyHeight / 2, 0),
+      		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+      		new THREE.Vector3(1, 1, 1)
+      	), 1);
+      }
+      BallisticMissileGeometry.prototype = Object.create(THREE.Geometry.prototype);
+      BallisticMissileGeometry.prototype.constructor = BallisticMissileGeometry;
+    </script>
+    <script>
       var scene, camera, renderer, controls;
       var clock = new THREE.Clock();
+      var ballisticMissile;
       
       init();
       animate();
@@ -47,6 +84,12 @@
       	
       	var gridXZ = new THREE.GridHelper(400, 40, 0xff0000, 0xffffff);
       	scene.add(gridXZ);
+      	
+      	// ballisticMissile
+      	ballisticMissile = new THREE.Mesh(
+      		new BallisticMissileGeometry(10, 40, 2 / 3, 32),
+      		new THREE.MeshNormalMaterial());
+      	scene.add(ballisticMissile);
       }
       
       function onWindowResize() {
