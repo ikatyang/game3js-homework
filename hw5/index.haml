@@ -544,6 +544,8 @@
 				this.maxRotationRadius = 1500;
 				this.maxRotationAngle = Math.PI / 4;
 				this.maxRotationSpeed = Math.PI / 4;
+				
+				this.enableRolling = true;
 			}
 			AntiBallisticMissile.prototype = Object.assign(Object.create(Missile.prototype), {
 				
@@ -584,7 +586,7 @@
 					var r = c.clone().sub(p0).length();
 					
 					var rotationRadius = Math.min(this.maxRotationRadius, r);
-					var rotationAngle = (1 - rotationRadius / this.maxRotationRadius) * this.maxRotationAngle;
+					var rotationAngle = this.enableRolling ? (1 - rotationRadius / this.maxRotationRadius) * this.maxRotationAngle : 0;
 					
 					var rotationDeltaFull = rotationAngle - this.rotation.z;
 					var rotationDeltaPart = this.maxRotationSpeed * delta * Math.sign(rotationDeltaFull);
@@ -789,7 +791,8 @@
 				var gui = new dat.GUI();
 				
 				var folderABM = gui.addFolder('Anti Ballistic Missile');
-				folderABM.add(window, 'launchAntiBallisticMissile').name('launch');
+				folderABM.add(window, 'launchAntiBallisticMissile').name('Launch');
+				folderABM.add(antiBallisticMissile, 'enableRolling').name('Rolling');
 				folderABM.open();
 			}
 			
