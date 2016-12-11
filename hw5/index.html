@@ -30,6 +30,11 @@
       	border-right: 0;
       	border-bottom: 0;
       }
+      .border.radarCamera {
+      	top: 0;
+      	left: 0;
+      	overflow: hidden;
+      }
     </style>
     <script id='explosion_vertex_shader' type='x-shader/x-vertex'>
       //
@@ -260,6 +265,7 @@
   <body>
     <div class='top'>GP_HW5</div>
     <div class='border abmCamera'></div>
+    <div class='border radarCamera'></div>
     <script>
       function OBB(mesh) {
       	
@@ -718,6 +724,7 @@
       var ballisticMissile, antiBallisticMissile;
       var explosion, explosionables = [];
       var abmCamera;
+      var radar;
       
       init();
       animate();
@@ -734,6 +741,7 @@
       	renderer.setSize(window.innerWidth, window.innerHeight);
       	renderer.setClearColor(0x888888);
       	renderer.setScissorTest(true);
+      	renderer.autoClear = false;
       	document.body.appendChild(renderer.domElement);
       	
       	controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -802,6 +810,9 @@
       	scene.add(antiBallisticMissile);
       	explosionables.push(antiBallisticMissile);
       	
+      	// radar
+      	radar = createRadar(300);
+      	
       	// gui
       	var gui = new dat.GUI();
       	
@@ -823,6 +834,58 @@
       	
       	var folderDetailABM = folderABM.addFolder('ABM Detail');
       	folderDetailABM.add(antiBallisticMissile, 'predictTime', 0.5, 5);
+      }
+      
+      function createRadar(radius) {
+      	
+      	var radar = {};
+      	
+      	var rtScene = radar.rtScene = new THREE.Scene();
+      	var rtCamera = radar.rtCamera = new THREE.OrthographicCamera(-radius, radius, radius, -radius, 1, 1000);
+      	rtCamera.rotation.x = Math.PI * -0.5;
+      	
+      	var circles = [];
+      	
+      	for (var i = 0; i < explosionables.length; i++) {
+      		
+      		var explosionable = explosionables[i];
+      		
+      		var circle = new THREE.Mesh(
+      			new THREE.CircleGeometry(10, 32),
+      			new THREE.MeshBasicMaterial({ color: (i === 0) ? 'red' : (i === explosionables.length - 1) ? 'yellow' : 'blue' }));
+      		circle.rotation.x = Math.PI * -0.5;
+      		
+      		rtScene.add(circle);
+      		circles.push(circle);
+      	}
+      	
+      	var renderTarget = radar.renderTarget = new THREE.WebGLRenderTarget(radius * 2, radius * 2);
+      	var radarScene = radar.scene = rtScene.clone();
+      	var radarCamera = radar.camera = rtCamera.clone();
+      	radarCamera.position.y = 100;
+      	
+      	var radarCircle = new THREE.Mesh(
+      		new THREE.CircleGeometry(radius, 32),
+      		new THREE.MeshBasicMaterial({ map: renderTarget.texture }));
+      	radarCircle.rotation.x = Math.PI * -0.5;
+      	radarScene.add(radarCircle);
+      	
+      	radar.update = function () {
+      		
+      		rtCamera.position.copy(ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 0))).setY(800);
+      		
+      		for (var i = 0; i < explosionables.length; i++) {
+      			
+      			if (circles[i].visible)
+      				circles[i].position.copy(explosionables[i].position);
+      			
+      			if (explosionables[i].exploded)
+      				circles[i].visible = false;
+      		}
+      		
+      	};
+      	
+      	return radar;
       }
       
       function createLauncher() {
@@ -1077,9 +1140,33 @@
       
       function render() {
       	
+      	renderer.clear();
+      	
       	renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       	renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
-      	renderer.render(scene, camera);
+      	renderer.render(scene, camera, null, true);
+      	
+      	if (!ballisticMissile.exploded) {
+      		
+      		var radarWidth = 0.3 * (window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight);
+      		var radarHeight = radarWidth;
+      		
+      		$('.border.radarCamera')
+      			.css('width', radarWidth + 'px')
+      			.css('height', radarHeight + 'px')
+      			.css('border-radius', radarWidth + 'px')
+      			.show();
+      		
+      		radar.update();
+      		
+      		renderer.render(radar.rtScene, radar.rtCamera, radar.renderTarget, true);
+      		
+      		renderer.setViewport(0, window.innerHeight - radarHeight, radarWidth, radarHeight);
+      		renderer.setScissor(0, window.innerHeight - radarHeight, radarWidth, radarHeight);
+      		renderer.render(radar.scene, radar.camera);
+      	} else {
+      		$('.border.radarCamera').hide();
+      	}
       	
       	if (antiBallisticMissile.enable && antiBallisticMissile.material.opacity > 0) {
       		
@@ -1098,7 +1185,7 @@
       		
       		renderer.setViewport(window.innerWidth - abmWidth, 0, abmWidth, abmHeight);
       		renderer.setScissor(window.innerWidth - abmWidth, 0, abmWidth, abmHeight);
-      		renderer.render(scene, abmCamera);
+      		renderer.render(scene, abmCamera, null, true);
       	} else {
       		$('.border.abmCamera').hide();
       	}
