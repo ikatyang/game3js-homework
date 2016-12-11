@@ -558,6 +558,18 @@
       		new THREE.MeshNormalMaterial())
       	building.position.y = height / 2;
       	
+      	building.explode = function () {
+      		this.exploded = true;
+      		this.material.transparent = true;
+      	};
+      	
+      	building.update = function (delta) {
+      		if (this.exploded && this.material.opacity > 0) {
+      			this.position.y -= delta * (height / 10);
+      			this.material.opacity = Math.max(0, this.material.opacity - delta / 2);
+      		}
+      	};
+      	
       	return building;
       }
       
@@ -566,6 +578,18 @@
       	var balloon = new THREE.Mesh(
       		new THREE.BoxGeometry(width, height, depth),
       		new THREE.MeshNormalMaterial());
+      		
+      	balloon.explode = function () {
+      		this.exploded = true;
+      		this.material.transparent = true;
+      	};
+      	
+      	balloon.update = function (delta) {
+      		if (this.exploded && this.material.opacity > 0) {
+      			this.position.y -= delta * (height / 2);
+      			this.material.opacity = Math.max(0, this.material.opacity - delta / 3);
+      		}
+      	};
       	
       	return balloon;
       }
@@ -640,6 +664,8 @@
       				explosion.position.copy(ballisticMissile.position);
       				explosion.show();
       				
+      				explosionable.explode();
+      				
       				return;
       			}
       		}
@@ -653,11 +679,18 @@
       }
       
       function animate() {
+      	
       	var delta = clock.getDelta();
+      	
       	ballisticMissile.update(delta);
+      	
       	if (!ballisticMissile.exploded)
       		checkCollision();
+      	
+      	for (var i = 0; i < explosionables.length; i++)
+      		explosionables[i].update(delta);
       	explosion.update(delta);
+      	
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
