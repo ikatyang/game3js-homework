@@ -440,13 +440,20 @@
 				
 				updateRotation: function () {
 					
+					if (this.rotation.order !== 'YXZ')
+						this.rotation.reorder('YXZ');
+					
+					var rotationZ = this.rotation.z;
+					
 					var xAxis = this.axisFront.clone().cross(this.velocity).normalize();
 					if (xAxis.length() === 0)
 						xAxis.set(1, 0, 0);
 					
 					var zAxis = this.velocity.clone().normalize();
 					var yAxis = zAxis.clone().cross(xAxis).normalize();
+					
 					this.rotation.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
+					this.rotation.z = rotationZ;
 				},
 				
 				update: function (delta) {
