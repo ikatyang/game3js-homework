@@ -370,9 +370,9 @@
 			BallisticMissileGeometry.prototype = Object.create(THREE.Geometry.prototype);
 			BallisticMissileGeometry.prototype.constructor = BallisticMissileGeometry;
 		:javascript
-			function BallisticMissile(ballisticMissileGeometry, material) {
+			function Missile(geometry, material) {
 			
-				THREE.Mesh.call(this, ballisticMissileGeometry, material);
+				THREE.Mesh.call(this, geometry, material);
 				
 				this.mass = 1;
 				
@@ -386,18 +386,19 @@
 				this.maxAvoidForce = 120;
 				
 				this.obstacles = [];
-				
-				this.enoughHeight = 400;
-				this.enoughClosed = 400;
-				
-				this.state = 'up';
 			}
-			BallisticMissile.prototype = Object.assign(Object.create(THREE.Mesh.prototype), {
+			Missile.prototype = Object.assign(Object.create(THREE.Mesh.prototype), {
 				
-				constructor: BallisticMissile,
+				constructor: Missile,
 				
-				getSeekForce: function () {
-					return this.getDirection()
+				updateCenter: function () {
+					if (!this.geometry.boundingSphere)
+						this.geometry.computeBoundingSphere();
+					this.center = this.localToWorld(this.geometry.boundingSphere.center.clone());
+				},
+				
+				getSteerForce: function () {
+					return this.target.clone().sub(this.center)
 						.setLength(this.maxSpeed)
 						.sub(this.velocity);
 				},
@@ -413,7 +414,7 @@
 						
 						var obstacle = this.obstacles[i];
 						
-						var offset = obstacle.center.clone().sub(this.position);
+						var offset = obstacle.center.clone().sub(this.center);
 						var offsetProj = offset.clone().projectOnVector(this.velocity);
 						var offsetProjLength = offsetProj.length();
 						var steerOffset = offsetProj.clone().sub(offset);
@@ -432,40 +433,22 @@
 					return avoidForce;
 				},
 				
-				getDirection: function () {
-					switch (this.state) {
-						case 'up':
-							return this.axisY.clone();
-						case 'front':
-							return this.target.clone().sub(this.position).setY(0);
-						default:
-							return this.target.clone().sub(this.position);
-					}
-				},
-				
 				updateAxisY: function () {
 					this.updateMatrixWorld();
 					this.axisY = this.localToWorld(new THREE.Vector3(0, 1, 0)).sub(this.position);
 				},
 				
-				updateState: function () {
-					if (this.state === 'up' && this.position.y >= this.enoughHeight)
-						this.state = 'front';
-					if (this.state === 'front' && this.position.clone().sub(this.target).setY(0).length() < this.enoughClosed)
-						this.state = 'down';
-				},
-				
 				update: function (delta) {
 					
+					this.updateCenter();
 					this.updateAxisY();
-					this.updateState();
 					
 					var force = new THREE.Vector3(0, 0, 0);
 					
-					var seekForce = this.getSeekForce();
+					var steerForce = this.getSteerForce();
 					var avoidForce = this.getAvoidForce();
 					
-					force.add(seekForce).add(avoidForce).clampLength(0, this.maxForce);
+					force.add(steerForce).add(avoidForce).clampLength(0, this.maxForce);
 					
 					this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
 					this.position.addScaledVector(this.velocity, delta);
@@ -476,6 +459,49 @@
 						var zAxis = xAxis.clone().cross(yAxis).normalize();
 						this.rotation.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
 					}
+					
+					this.onAfterUpdate();
+				},
+				
+				onAfterUpdate: function () {},
+				
+			});
+		:javascript
+			function BallisticMissile(geometry, material) {
+			
+				Missile.call(this, geometry, material);
+				
+				this.enoughHeight = 400;
+				this.enoughClosed = 400;
+				
+				this.state = 'up';
+			}
+			BallisticMissile.prototype = Object.assign(Object.create(Missile.prototype), {
+				
+				constructor: BallisticMissile,
+				
+				getDirection: function () {
+					switch (this.state) {
+						case 'up':
+							return this.axisY.clone();
+						case 'front':
+							return this.target.clone().sub(this.center).setY(0);
+						default:
+							return this.target.clone().sub(this.center);
+					}
+				},
+				
+				getSteerForce: function () {
+					return this.getDirection()
+						.setLength(this.maxSpeed)
+						.sub(this.velocity);
+				},
+				
+				onAfterUpdate: function () {
+					if (this.state === 'up' && this.center.y >= this.enoughHeight)
+						this.state = 'front';
+					if (this.state === 'front' && this.center.clone().sub(this.target).setY(0).length() < this.enoughClosed)
+						this.state = 'down';
 				},
 				
 			});
