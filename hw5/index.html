@@ -812,7 +812,7 @@
       	folderBM.open();
       	
       	var folderDetailBM = folderBM.addFolder('BM Detail');
-      	folderDetailBM.add(ballisticMissile, 'state').listen();
+      	folderDetailBM.add(ballisticMissile, 'state', ['up', 'front', 'down']).listen();
       	folderDetailBM.add(ballisticMissile, 'enoughHeight', 0, 400);
       	folderDetailBM.add(ballisticMissile, 'enoughClosed', 0, 800);
       	
