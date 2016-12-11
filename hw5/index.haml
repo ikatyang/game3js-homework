@@ -765,12 +765,17 @@
 				ballisticMissile = new BallisticMissile(
 					new BallisticMissileGeometry(10, 40, 2 / 3, 32),
 					new THREE.MeshNormalMaterial());
-				ballisticMissile.position.set(-300, 0, -300);
+				ballisticMissile.position.z = 5;
 				ballisticMissile.target.copy(target);
 				ballisticMissile.obstacles = obstacles;
-				ballisticMissile.velocity.set(1, 1, 0).setLength(50);
-				ballisticMissile.update(0);
-				scene.add(ballisticMissile);
+				
+				// Launcher
+				var launcher = createLauncher();
+				launcher.position.set(-300, 0, -300);
+				launcher.setBallisticMissile(ballisticMissile);
+				launcher.pitch = Math.PI * -0.25;
+				launcher.yaw = Math.PI * 1.75;
+				scene.add(launcher);
 				
 				// explosion
 				explosion = createExplosion(60);
@@ -792,8 +797,8 @@
 				
 				var folderBM = gui.addFolder('Ballistic Missile');
 				folderBM.add(window, 'launchBallisticMissile').name('Launch');
-				folderBM.add(ballisticMissile.rotation, 'x', Math.PI * -0.9, Math.PI * -0.1).name('Pitch');
-				folderBM.add(ballisticMissile.rotation, 'y', 0, Math.PI * 2).name('Yaw');
+				folderBM.add(launcher, 'pitch', Math.PI * 5 / -6, Math.PI * 1 / -6).name('Pitch');
+				folderBM.add(launcher, 'yaw', 0, Math.PI * 2).name('Yaw');
 				folderBM.open();
 				
 				var folderDetailBM = folderBM.addFolder('BM Detail');
@@ -808,6 +813,69 @@
 				
 				var folderDetailABM = folderABM.addFolder('ABM Detail');
 				folderDetailABM.add(antiBallisticMissile, 'predictTime', 0.5, 5);
+			}
+			
+			function createLauncher() {
+				
+				var launcher = new THREE.Object3D();
+				
+				var cylinder1 = new THREE.Mesh(
+					new THREE.CylinderGeometry(45, 50, 10, 32),
+					new THREE.MeshNormalMaterial());
+				cylinder1.position.y = 5;
+				launcher.add(cylinder1);
+				
+				var cylinder2 = new THREE.Mesh(
+					new THREE.CylinderGeometry(30, 35, 10, 32),
+					new THREE.MeshNormalMaterial());
+				cylinder2.position.y = 5 + 5;
+				cylinder1.add(cylinder2);
+				
+				var cylinder3 = new THREE.Mesh(
+					new THREE.CylinderGeometry(5, 5, 60, 32),
+					new THREE.MeshNormalMaterial());
+				cylinder3.position.set(0, 20, 20);
+				cylinder2.add(cylinder3);
+				
+				var cylinder4 = new THREE.Mesh(
+					new THREE.CylinderGeometry(5, 5, 60, 32),
+					new THREE.MeshNormalMaterial());
+				cylinder4.position.set(0, 20, -20);
+				cylinder2.add(cylinder4);
+				
+				var torus = new THREE.Mesh(
+					new THREE.TorusGeometry(20, 5, 16, 32),
+					new THREE.MeshNormalMaterial());
+				torus.rotation.set(0, Math.PI * 0.5, 0, 'YXZ');
+				torus.position.y = 20 + 30;
+				cylinder2.add(torus);
+				
+				Object.defineProperties(launcher, {
+					
+					pitch: {
+						get: function () {
+							return torus.rotation.x;
+						},
+						set: function (value) {
+							torus.rotation.x = value;
+						},
+					},
+					
+					yaw: {
+						get: function () {
+							return cylinder2.rotation.y;
+						},
+						set: function (value) {
+							cylinder2.rotation.y = value;
+						},
+					},
+				});
+				
+				launcher.setBallisticMissile = function (ballisticMissile) {
+					torus.add(ballisticMissile);
+				};
+				
+				return launcher;
 			}
 			
 			function createBuilding(width, height, depth) {
@@ -926,7 +994,15 @@
 			}
 			
 			function launchBallisticMissile() {
-				ballisticMissile.velocity.copy(ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 1)).sub(ballisticMissile.position)).setLength(50);
+				
+				var front = ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 1));
+				var origin = ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 0));
+				
+				ballisticMissile.velocity.subVectors(front, origin).setLength(50);
+				ballisticMissile.parent.localToWorld(ballisticMissile.position);
+				
+				scene.add(ballisticMissile);
+				
 				ballisticMissile.enable = true;
 			}
 			
