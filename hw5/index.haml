@@ -735,7 +735,7 @@
 				var gui = new dat.GUI();
 				
 				var folderABM = gui.addFolder('Anti Ballistic Missile');
-				folderABM.add(antiBallisticMissile, 'enable');
+				folderABM.add(window, 'launchAntiBallisticMissile').name('launch');
 				folderABM.open();
 			}
 			
@@ -852,6 +852,10 @@
 				};
 				
 				return antiBallisticMissile;
+			}
+			
+			function launchAntiBallisticMissile() {
+				antiBallisticMissile.enable = true;
 			}
 			
 			function checkCollision() {
