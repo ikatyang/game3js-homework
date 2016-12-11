@@ -20,6 +20,16 @@
       	top: 1em;
       	color: yellow;
       }
+      .border {
+      	border: 1px solid yellow;
+      	position: absolute;
+      }
+      .border.abmCamera {
+      	right: 0;
+      	bottom: 0;
+      	border-right: 0;
+      	border-bottom: 0;
+      }
     </style>
     <script id='explosion_vertex_shader' type='x-shader/x-vertex'>
       //
@@ -249,6 +259,7 @@
   </head>
   <body>
     <div class='top'>GP_HW5</div>
+    <div class='border abmCamera'></div>
     <script>
       function OBB(mesh) {
       	
@@ -702,6 +713,7 @@
       var clock = new THREE.Clock();
       var ballisticMissile, antiBallisticMissile;
       var explosion, explosionables = [];
+      var abmCamera;
       
       init();
       animate();
@@ -711,10 +723,13 @@
       
       	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
       	camera.position.set(0, 500, 500);
+      	
+      	abmCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
       
       	renderer = new THREE.WebGLRenderer();
       	renderer.setSize(window.innerWidth, window.innerHeight);
       	renderer.setClearColor(0x888888);
+      	renderer.setScissorTest(true);
       	document.body.appendChild(renderer.domElement);
       	
       	controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -956,7 +971,36 @@
       	
       	controls.update();
       	requestAnimationFrame(animate);
+      	render();
+      }
+      
+      function render() {
+      	
+      	renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+      	renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
       	renderer.render(scene, camera);
+      	
+      	if (antiBallisticMissile.enable && antiBallisticMissile.material.opacity > 0) {
+      		
+      		var abmWidth = 0.3 * (window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight);
+      		var abmHeight = abmWidth;
+      		
+      		$('.border.abmCamera')
+      			.css('width', abmWidth + 'px')
+      			.css('height', abmHeight + 'px')
+      			.show();
+      		
+      		abmCamera.position.copy(antiBallisticMissile.center)
+      			.addScaledVector(antiBallisticMissile.axisFront, -50)
+      			.addScaledVector(antiBallisticMissile.localToWorld(new THREE.Vector3(0, 1, 0)).sub(antiBallisticMissile.position), 50);
+      		abmCamera.lookAt(antiBallisticMissile.center);
+      		
+      		renderer.setViewport(window.innerWidth - abmWidth, 0, abmWidth, abmHeight);
+      		renderer.setScissor(window.innerWidth - abmWidth, 0, abmWidth, abmHeight);
+      		renderer.render(scene, abmCamera);
+      	} else {
+      		$('.border.abmCamera').hide();
+      	}
       }
     </script>
   </body>
