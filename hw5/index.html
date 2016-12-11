@@ -31,8 +31,8 @@
       	border-bottom: 0;
       }
       .border.radarCamera {
-      	top: 0;
-      	left: 0;
+      	top: 0.5px;
+      	left: 0.5px;
       	overflow: hidden;
       }
     </style>
@@ -1152,9 +1152,9 @@
       		var radarHeight = radarWidth;
       		
       		$('.border.radarCamera')
-      			.css('width', radarWidth + 'px')
-      			.css('height', radarHeight + 'px')
-      			.css('border-radius', radarWidth + 'px')
+      			.css('width', (radarWidth - 2) + 'px')
+      			.css('height', (radarHeight - 2) + 'px')
+      			.css('border-radius', (radarWidth - 2) + 'px')
       			.show();
       		
       		radar.update();
