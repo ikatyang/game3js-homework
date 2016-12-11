@@ -768,7 +768,7 @@
 				ballisticMissile.position.set(-300, 0, -300);
 				ballisticMissile.target.copy(target);
 				ballisticMissile.obstacles = obstacles;
-				ballisticMissile.velocity.set(0, 1, 0).setLength(50);
+				ballisticMissile.velocity.set(1, 1, 0).setLength(50);
 				ballisticMissile.update(0);
 				scene.add(ballisticMissile);
 				
@@ -792,6 +792,8 @@
 				
 				var folderBM = gui.addFolder('Ballistic Missile');
 				folderBM.add(window, 'launchBallisticMissile').name('Launch');
+				folderBM.add(ballisticMissile.rotation, 'x', Math.PI * -0.9, Math.PI * -0.1).name('Pitch');
+				folderBM.add(ballisticMissile.rotation, 'y', 0, Math.PI * 2).name('Yaw');
 				folderBM.open();
 				
 				var folderABM = gui.addFolder('Anti Ballistic Missile');
@@ -916,6 +918,7 @@
 			}
 			
 			function launchBallisticMissile() {
+				ballisticMissile.velocity.copy(ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 1)).sub(ballisticMissile.position)).setLength(50);
 				ballisticMissile.enable = true;
 			}
 			
