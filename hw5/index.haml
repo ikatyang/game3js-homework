@@ -355,15 +355,15 @@
 				
 				var head = new THREE.CylinderGeometry(0, radius, headHeight, radiusSegments);
 				this.merge(head, new THREE.Matrix4().compose(
-					new THREE.Vector3(0, height / 2 - headHeight / 2, 0),
-					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(0, 0, height / 2 - headHeight / 2),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				), 0);
 				
 				var body = new THREE.CylinderGeometry(radius, radius, bodyHeight, radiusSegments);
 				this.merge(body, new THREE.Matrix4().compose(
-					new THREE.Vector3(0, -height / 2 + bodyHeight / 2, 0),
-					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(0, 0, -height / 2 + bodyHeight / 2),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				), 1);
 			}
@@ -433,15 +433,26 @@
 					return avoidForce;
 				},
 				
-				updateAxisY: function () {
+				updateAxisFront: function () {
 					this.updateMatrixWorld();
-					this.axisY = this.localToWorld(new THREE.Vector3(0, 1, 0)).sub(this.position);
+					this.axisFront = this.localToWorld(new THREE.Vector3(0, 0, 1)).sub(this.position);
+				},
+				
+				updateRotation: function () {
+					
+					var xAxis = this.axisFront.clone().cross(this.velocity).normalize();
+					if (xAxis.length() === 0)
+						xAxis.set(1, 0, 0);
+					
+					var zAxis = this.velocity.clone().normalize();
+					var yAxis = zAxis.clone().cross(xAxis).normalize();
+					this.rotation.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
 				},
 				
 				update: function (delta) {
 					
 					this.updateCenter();
-					this.updateAxisY();
+					this.updateAxisFront();
 					
 					var force = new THREE.Vector3(0, 0, 0);
 					
@@ -453,12 +464,7 @@
 					this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
 					this.position.addScaledVector(this.velocity, delta);
 					
-					var xAxis = this.axisY.clone().cross(this.velocity).normalize();
-					if (xAxis.length() > 0) {
-						var yAxis = this.velocity.clone().normalize();
-						var zAxis = xAxis.clone().cross(yAxis).normalize();
-						this.rotation.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
-					}
+					this.updateRotation();
 					
 					this.onAfterUpdate();
 				},
@@ -483,7 +489,7 @@
 				getDirection: function () {
 					switch (this.state) {
 						case 'up':
-							return this.axisY.clone();
+							return this.axisFront.clone();
 						case 'front':
 							return this.target.clone().sub(this.center).setY(0);
 						default:
@@ -643,6 +649,7 @@
 					new BallisticMissileGeometry(10, 40, 2 / 3, 32),
 					new THREE.MeshNormalMaterial());
 				ballisticMissile.position.set(-300, 0, -300);
+				ballisticMissile.rotation.set(-Math.PI / 2, 0, 0);
 				ballisticMissile.target.set(300, 200, 300);
 				scene.add(ballisticMissile);
 				
