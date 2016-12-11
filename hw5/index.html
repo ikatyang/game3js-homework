@@ -658,20 +658,10 @@
       	var gridXZ = new THREE.GridHelper(400, 40, 0xff0000, 0xffffff);
       	scene.add(gridXZ);
       	
-      	// ballisticMissile
-      	ballisticMissile = new BallisticMissile(
-      		new BallisticMissileGeometry(10, 40, 2 / 3, 32),
-      		new THREE.MeshNormalMaterial());
-      	ballisticMissile.position.set(-300, 0, -300);
-      	ballisticMissile.rotation.set(-Math.PI / 2, 0, 0);
-      	ballisticMissile.target.set(300, 200, 300);
-      	scene.add(ballisticMissile);
-      	
       	// building
       	var building = createBuilding(50, ballisticMissile.target.y, 50);
       	building.position.copy(ballisticMissile.target.clone().setY(building.position.y));
       	scene.add(building);
-      	
       	explosionables.push(building);
       	
       	// balloons
@@ -686,15 +676,24 @@
       		var balloon = createBalloon(20, 40, 20);
       		balloon.position.copy(ballisticMissile.target).add(offset);
       		scene.add(balloon);
-      		
       		explosionables.push(balloon);
+      		
       		
       		if (!balloon.geometry.boundingSphere)
       			balloon.geometry.computeBoundingSphere();
       		
       		obstacles.push(balloon.geometry.boundingSphere.clone().translate(balloon.position));
       	}
+      	
+      	// ballisticMissile
+      	ballisticMissile = new BallisticMissile(
+      		new BallisticMissileGeometry(10, 40, 2 / 3, 32),
+      		new THREE.MeshNormalMaterial());
+      	ballisticMissile.position.set(-300, 0, -300);
+      	ballisticMissile.rotation.set(-Math.PI / 2, 0, 0);
+      	ballisticMissile.target.set(300, 200, 300);
       	ballisticMissile.obstacles = obstacles;
+      	scene.add(ballisticMissile);
       	
       	// explosion
       	explosion = createExplosion(60);
@@ -705,7 +704,7 @@
       		new AntiBallisticMissileGeometry(50, 30, 35),
       		new THREE.MeshNormalMaterial());
       	antiBallisticMissile.position.set(-300, 0, 300);
-      	antiBallisticMissile.rotation.set(-Math.PI / 6, Math.PI * (3 / 4), 0, 'YXZ')
+      	antiBallisticMissile.rotation.set(-Math.PI / 6, Math.PI * (3 / 4), 0, 'YXZ');
       	scene.add(antiBallisticMissile);
       }
       
