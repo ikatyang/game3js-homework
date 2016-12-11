@@ -718,9 +718,10 @@
       		new BallisticMissileGeometry(10, 40, 2 / 3, 32),
       		new THREE.MeshNormalMaterial());
       	ballisticMissile.position.set(-300, 0, -300);
-      	ballisticMissile.rotation.set(-Math.PI / 2, 0, 0);
       	ballisticMissile.target.copy(target);
       	ballisticMissile.obstacles = obstacles;
+      	ballisticMissile.velocity.set(0, 1, 0).setLength(50);
+      	ballisticMissile.update(0);
       	scene.add(ballisticMissile);
       	
       	// explosion
@@ -730,10 +731,11 @@
       	// antiBallisticMissile
       	antiBallisticMissile = createAntiBallisticMissile(50, 30, 35);
       	antiBallisticMissile.position.set(-300, 0, 300);
-      	antiBallisticMissile.rotation.set(-Math.PI / 6, Math.PI * (3 / 4), 0, 'YXZ');
       	antiBallisticMissile.targetMissile = ballisticMissile;
       	antiBallisticMissile.obstacles = obstacles;
       	antiBallisticMissile.enable = false;
+      	antiBallisticMissile.velocity.set(1, 1, -1).setLength(50);
+      	antiBallisticMissile.update(0);
       	scene.add(antiBallisticMissile);
       	explosionables.push(antiBallisticMissile);
       	
