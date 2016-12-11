@@ -829,60 +829,60 @@
       	
       	var launcher = new THREE.Object3D();
       	
-      	var cylinder1 = new THREE.Mesh(
+      	var base = new THREE.Mesh(
       		new THREE.CylinderGeometry(45, 50, 10, 32),
       		new THREE.MeshNormalMaterial());
-      	cylinder1.position.y = 5;
-      	launcher.add(cylinder1);
+      	base.position.y = 5;
+      	launcher.add(base);
       	
-      	var cylinder2 = new THREE.Mesh(
+      	var yaw = new THREE.Mesh(
       		new THREE.CylinderGeometry(30, 35, 10, 32),
       		new THREE.MeshNormalMaterial());
-      	cylinder2.position.y = 5 + 5;
-      	cylinder1.add(cylinder2);
+      	yaw.position.y = 5 + 5;
+      	base.add(yaw);
       	
-      	var cylinder3 = new THREE.Mesh(
+      	var post1 = new THREE.Mesh(
       		new THREE.CylinderGeometry(5, 5, 60, 32),
       		new THREE.MeshNormalMaterial());
-      	cylinder3.position.set(0, 20, 20);
-      	cylinder2.add(cylinder3);
+      	post1.position.set(0, 20, 20);
+      	yaw.add(post1);
       	
-      	var cylinder4 = new THREE.Mesh(
+      	var post2 = new THREE.Mesh(
       		new THREE.CylinderGeometry(5, 5, 60, 32),
       		new THREE.MeshNormalMaterial());
-      	cylinder4.position.set(0, 20, -20);
-      	cylinder2.add(cylinder4);
+      	post2.position.set(0, 20, -20);
+      	yaw.add(post2);
       	
-      	var torus = new THREE.Mesh(
+      	var pitch = new THREE.Mesh(
       		new THREE.TorusGeometry(20, 5, 16, 32),
       		new THREE.MeshNormalMaterial());
-      	torus.rotation.set(0, Math.PI * 0.5, 0, 'YXZ');
-      	torus.position.y = 20 + 30;
-      	cylinder2.add(torus);
+      	pitch.rotation.set(0, Math.PI * 0.5, 0, 'YXZ');
+      	pitch.position.y = 20 + 30;
+      	yaw.add(pitch);
       	
       	Object.defineProperties(launcher, {
       		
       		pitch: {
       			get: function () {
-      				return torus.rotation.x;
+      				return pitch.rotation.x;
       			},
       			set: function (value) {
-      				torus.rotation.x = value;
+      				pitch.rotation.x = value;
       			},
       		},
       		
       		yaw: {
       			get: function () {
-      				return cylinder2.rotation.y;
+      				return yaw.rotation.y;
       			},
       			set: function (value) {
-      				cylinder2.rotation.y = value;
+      				yaw.rotation.y = value;
       			},
       		},
       	});
       	
       	launcher.setBallisticMissile = function (ballisticMissile) {
-      		torus.add(ballisticMissile);
+      		pitch.add(ballisticMissile);
       	};
       	
       	return launcher;
