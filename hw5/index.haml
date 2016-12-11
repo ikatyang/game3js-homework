@@ -458,7 +458,7 @@
 				
 				update: function (delta) {
 					
-					this.onBeforeUpdate();
+					this.onBeforeUpdate(delta);
 					
 					this.updateCenter();
 					this.updateAxisFront();
@@ -475,7 +475,7 @@
 					
 					this.updateRotation();
 					
-					this.onAfterUpdate();
+					this.onAfterUpdate(delta);
 				},
 				
 				onAfterUpdate: function () {},
@@ -528,18 +528,57 @@
 				
 				this.predictTime = 3;
 				this.targetMissile = null;
+				
+				this.lastPositions = [];
+				this.maxRotationRadius = 1500;
+				this.maxRotationAngle = Math.PI / 4;
+				this.maxRotationSpeed = Math.PI / 4;
 			}
 			AntiBallisticMissile.prototype = Object.assign(Object.create(Missile.prototype), {
 				
 				constructor: AntiBallisticMissile,
 				
 				onBeforeUpdate: function () {
+					
 					this.target.copy(this.targetMissile.position.clone()
 						.addScaledVector(this.targetMissile.velocity, this.predictTime));
+					
+					this.lastPositions.unshift(this.position.clone());
+					if (this.lastPositions.length > 3)
+						this.lastPositions.length = 3;
 				},
 				
-				onAfterUpdate: function () {
-					// TODO
+				onAfterUpdate: function (delta) {
+					
+					if (this.lastPositions.length < 3)
+						return;
+					
+					var p0 = this.lastPositions[0];
+					var p1 = this.lastPositions[1];
+					var p2 = this.lastPositions[2];
+					
+					var q0 = p0.clone().add(p1).divideScalar(2);
+					var q1 = p1.clone().add(p2).divideScalar(2);
+					
+					var p2p1 = p1.clone().sub(p2);
+					var p1p0 = p0.clone().sub(p1);
+					
+					var n = p1p0.clone().cross(p2p1).normalize();
+					
+					var v0 = n.clone().cross(p1p0);
+					var v1 = n.clone().cross(p2p1);
+					
+					var s = -p1p0.dot(q1.clone().sub(q0)) / p1p0.dot(v1);
+					var c = q1.clone().addScaledVector(v1, s);
+					var r = c.clone().sub(p0).length();
+					
+					var rotationRadius = Math.min(this.maxRotationRadius, r);
+					var rotationAngle = (1 - rotationRadius / this.maxRotationRadius) * this.maxRotationAngle;
+					
+					var rotationDeltaFull = rotationAngle - this.rotation.z;
+					var rotationDeltaPart = this.maxRotationSpeed * delta * Math.sign(rotationDeltaFull);
+					var rotationDelta = Math.abs(rotationDeltaFull) < Math.abs(rotationDeltaPart) ? rotationDeltaFull : rotationDeltaPart;
+					this.rotation.z += rotationDelta;
 				},
 				
 			});
