@@ -530,9 +530,66 @@
 			TetragonalPrismGeometry.prototype = Object.create(THREE.Geometry.prototype);
 			TetragonalPrismGeometry.prototype.constructor = TetragonalPrismGeometry;
 		:javascript
+			function AntiBallisticMissileGeometry(width, height, depth) {
+				
+				THREE.Geometry.call(this);
+				
+				this.type = 'AntiBallisticMissileGeometry';
+				
+				this.parameters = {
+					width: width,
+					height: height,
+					depth: depth,
+				};
+				
+				var unitWidth = width / 5;
+				var unitHeight = height / 5;
+				var unitDepth = depth / 4;
+				
+				var body = new THREE.BoxGeometry(unitWidth, unitHeight, depth);
+				this.merge(body, new THREE.Matrix4().compose(
+					new THREE.Vector3(0, 0, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				), 0);
+				
+				var wing = new TetragonalPrismGeometry(unitHeight, unitWidth * 2, unitDepth, unitDepth);
+				this.merge(wing, new THREE.Matrix4().compose(
+					new THREE.Vector3(unitWidth * 0.5, 0, unitDepth * -0.25),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -Math.PI / 2, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				), 0);
+				this.merge(wing, new THREE.Matrix4().compose(
+					new THREE.Vector3(unitWidth * -0.5, 0, unitDepth * -0.25),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				), 0);
+				
+				var subWing = new TetragonalPrismGeometry(unitHeight, unitWidth, unitDepth / 2, unitDepth / 2);
+				this.merge(subWing, new THREE.Matrix4().compose(
+					new THREE.Vector3(unitWidth * 0.5, 0, unitDepth * -1.75),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -Math.PI / 2, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				), 0);
+				this.merge(subWing, new THREE.Matrix4().compose(
+					new THREE.Vector3(unitWidth * -0.5, 0, unitDepth * -1.75),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				), 0);
+				
+				var tail = new TetragonalPrismGeometry(unitWidth, unitHeight * 3, unitDepth / 2, unitDepth);
+				this.merge(tail, new THREE.Matrix4().compose(
+					new THREE.Vector3(0, unitHeight * 0.5, unitDepth * -1.75),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				), 0);
+			}
+			AntiBallisticMissileGeometry.prototype = Object.create(THREE.Geometry.prototype);
+			AntiBallisticMissileGeometry.prototype.constructor = AntiBallisticMissileGeometry;
+		:javascript
 			var scene, camera, renderer, controls;
 			var clock = new THREE.Clock();
-			var ballisticMissile;
+			var ballisticMissile, antiBallisticMissile;
 			var explosion, explosionables = [];
 			
 			init();
@@ -595,6 +652,14 @@
 				// explosion
 				explosion = createExplosion(60);
 				scene.add(explosion);
+				
+				// antiBallisticMissile
+				antiBallisticMissile = new THREE.Mesh(
+					new AntiBallisticMissileGeometry(50, 30, 35),
+					new THREE.MeshNormalMaterial());
+				antiBallisticMissile.position.set(-300, 0, 300);
+				antiBallisticMissile.rotation.set(-Math.PI / 6, Math.PI * (3 / 4), 0, 'YXZ')
+				scene.add(antiBallisticMissile);
 			}
 			
 			function createBuilding(width, height, depth) {
