@@ -458,6 +458,8 @@
 				
 				update: function (delta) {
 					
+					this.onBeforeUpdate();
+					
 					this.updateCenter();
 					this.updateAxisFront();
 					
@@ -477,6 +479,7 @@
 				},
 				
 				onAfterUpdate: function () {},
+				onBeforeUpdate: function () {},
 				
 			});
 		:javascript
@@ -515,6 +518,28 @@
 						this.state = 'front';
 					if (this.state === 'front' && this.center.clone().sub(this.target).setY(0).length() < this.enoughClosed)
 						this.state = 'down';
+				},
+				
+			});
+		:javascript
+			function AntiBallisticMissile(geometry, material) {
+			
+				Missile.call(this, geometry, material);
+				
+				this.predictTime = 3;
+				this.targetMissile = null;
+			}
+			AntiBallisticMissile.prototype = Object.assign(Object.create(Missile.prototype), {
+				
+				constructor: AntiBallisticMissile,
+				
+				onBeforeUpdate: function () {
+					this.target.copy(this.targetMissile.position.clone()
+						.addScaledVector(this.targetMissile.velocity, this.predictTime));
+				},
+				
+				onAfterUpdate: function () {
+					// TODO
 				},
 				
 			});
@@ -695,12 +720,21 @@
 				scene.add(explosion);
 				
 				// antiBallisticMissile
-				antiBallisticMissile = new THREE.Mesh(
-					new AntiBallisticMissileGeometry(50, 30, 35),
-					new THREE.MeshNormalMaterial());
+				antiBallisticMissile = createAntiBallisticMissile(50, 30, 35);
 				antiBallisticMissile.position.set(-300, 0, 300);
 				antiBallisticMissile.rotation.set(-Math.PI / 6, Math.PI * (3 / 4), 0, 'YXZ');
+				antiBallisticMissile.targetMissile = ballisticMissile;
+				antiBallisticMissile.obstacles = obstacles;
+				antiBallisticMissile.enable = false;
 				scene.add(antiBallisticMissile);
+				explosionables.push(antiBallisticMissile);
+				
+				// gui
+				var gui = new dat.GUI();
+				
+				var folderABM = gui.addFolder('Anti Ballistic Missile');
+				folderABM.add(antiBallisticMissile, 'enable');
+				folderABM.open();
 			}
 			
 			function createBuilding(width, height, depth) {
@@ -797,6 +831,27 @@
 				return explosion;
 			}
 			
+			function createAntiBallisticMissile(width, height, depth) {
+				
+				var antiBallisticMissile = new AntiBallisticMissile(
+					new AntiBallisticMissileGeometry(width, height, depth),
+					new THREE.MeshNormalMaterial());
+					
+				antiBallisticMissile.explode = function () {
+					this.exploded = true;
+					this.material.transparent = true;
+				};
+				
+				antiBallisticMissile.explodedUpdate = function (delta) {
+					if (this.exploded && this.material.opacity > 0) {
+						this.position.y -= delta * (height / 10);
+						this.material.opacity = Math.max(0, this.material.opacity - delta / 2);
+					}
+				};
+				
+				return antiBallisticMissile;
+			}
+			
 			function checkCollision() {
 				
 				var obb = new OBB(ballisticMissile);
@@ -835,6 +890,9 @@
 				var delta = clock.getDelta();
 				
 				ballisticMissile.update(delta);
+				
+				if (antiBallisticMissile.enable)
+					antiBallisticMissile.update(delta);
 				
 				if (!ballisticMissile.exploded)
 					checkCollision();
