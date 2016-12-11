@@ -714,7 +714,7 @@
       		this.material.transparent = true;
       	};
       	
-      	building.update = function (delta) {
+      	building.explodedUpdate = function (delta) {
       		if (this.exploded && this.material.opacity > 0) {
       			this.position.y -= delta * (height / 10);
       			this.material.opacity = Math.max(0, this.material.opacity - delta / 2);
@@ -735,7 +735,7 @@
       		this.material.transparent = true;
       	};
       	
-      	balloon.update = function (delta) {
+      	balloon.explodedUpdate = function (delta) {
       		if (this.exploded && this.material.opacity > 0) {
       			this.position.y -= delta * (height / 2);
       			this.material.opacity = Math.max(0, this.material.opacity - delta / 3);
@@ -839,7 +839,7 @@
       		checkCollision();
       	
       	for (var i = 0; i < explosionables.length; i++)
-      		explosionables[i].update(delta);
+      		explosionables[i].explodedUpdate(delta);
       	explosion.update(delta);
       	
       	controls.update();
