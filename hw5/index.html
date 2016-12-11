@@ -798,6 +798,10 @@
       	// gui
       	var gui = new dat.GUI();
       	
+      	var folderBM = gui.addFolder('Ballistic Missile');
+      	folderBM.add(window, 'launchBallisticMissile').name('Launch');
+      	folderBM.open();
+      	
       	var folderABM = gui.addFolder('Anti Ballistic Missile');
       	folderABM.add(window, 'launchAntiBallisticMissile').name('Launch');
       	folderABM.add(antiBallisticMissile, 'enableRolling').name('Rolling');
@@ -919,6 +923,10 @@
       	return antiBallisticMissile;
       }
       
+      function launchBallisticMissile() {
+      	ballisticMissile.enable = true;
+      }
+      
       function launchAntiBallisticMissile() {
       	antiBallisticMissile.enable = true;
       }
@@ -960,7 +968,8 @@
       	
       	var delta = clock.getDelta();
       	
-      	ballisticMissile.update(delta);
+      	if (ballisticMissile.enable)
+      		ballisticMissile.update(delta);
       	
       	if (antiBallisticMissile.enable)
       		antiBallisticMissile.update(delta);
