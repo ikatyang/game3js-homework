@@ -796,10 +796,18 @@
 				folderBM.add(ballisticMissile.rotation, 'y', 0, Math.PI * 2).name('Yaw');
 				folderBM.open();
 				
+				var folderDetailBM = folderBM.addFolder('BM Detail');
+				folderDetailBM.add(ballisticMissile, 'state').listen();
+				folderDetailBM.add(ballisticMissile, 'enoughHeight', 0, 400);
+				folderDetailBM.add(ballisticMissile, 'enoughClosed', 0, 800);
+				
 				var folderABM = gui.addFolder('Anti Ballistic Missile');
 				folderABM.add(window, 'launchAntiBallisticMissile').name('Launch');
 				folderABM.add(antiBallisticMissile, 'enableRolling').name('Rolling');
 				folderABM.open();
+				
+				var folderDetailABM = folderABM.addFolder('ABM Detail');
+				folderDetailABM.add(antiBallisticMissile, 'predictTime', 0.5, 5);
 			}
 			
 			function createBuilding(width, height, depth) {
