@@ -651,9 +651,11 @@
 				var gridXZ = new THREE.GridHelper(400, 40, 0xff0000, 0xffffff);
 				scene.add(gridXZ);
 				
+				var target = new THREE.Vector3(300, 200, 300);
+				
 				// building
-				var building = createBuilding(50, ballisticMissile.target.y, 50);
-				building.position.copy(ballisticMissile.target.clone().setY(building.position.y));
+				var building = createBuilding(50, target.y, 50);
+				building.position.copy(target.clone().setY(building.position.y));
 				scene.add(building);
 				explosionables.push(building);
 				
@@ -667,7 +669,7 @@
 						Math.random() * 200 - 100);
 					
 					var balloon = createBalloon(20, 40, 20);
-					balloon.position.copy(ballisticMissile.target).add(offset);
+					balloon.position.copy(target).add(offset);
 					scene.add(balloon);
 					explosionables.push(balloon);
 					
@@ -684,7 +686,7 @@
 					new THREE.MeshNormalMaterial());
 				ballisticMissile.position.set(-300, 0, -300);
 				ballisticMissile.rotation.set(-Math.PI / 2, 0, 0);
-				ballisticMissile.target.set(300, 200, 300);
+				ballisticMissile.target.copy(target);
 				ballisticMissile.obstacles = obstacles;
 				scene.add(ballisticMissile);
 				
