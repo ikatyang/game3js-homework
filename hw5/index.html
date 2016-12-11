@@ -266,7 +266,9 @@
       	if (!mesh.geometry.boundingBox)
       		mesh.geometry.computeBoundingBox();
       	
-      	this.center = mesh.position.clone().add(mesh.geometry.boundingBox.getCenter());
+      	mesh.updateMatrixWorld();
+      	
+      	this.center = mesh.localToWorld(mesh.geometry.boundingBox.getCenter());
       	this.size = mesh.geometry.boundingBox.getSize();
       	
       	var xAxis = new THREE.Vector3();
