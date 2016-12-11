@@ -1160,7 +1160,7 @@
 					$('.border.radarCamera').hide();
 				}
 				
-				if (antiBallisticMissile.enable && antiBallisticMissile.material.opacity > 0) {
+				if (antiBallisticMissile.enable && antiBallisticMissile.material.opacity > 0 && !ballisticMissile.exploded) {
 					
 					var abmWidth = 0.3 * (window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight);
 					var abmHeight = abmWidth;
