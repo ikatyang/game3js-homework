@@ -297,7 +297,7 @@
 					
 					bool horizontal = (angle < PI * 0.25 || (angle > PI * 0.75 && angle < PI * 1.25) || angle > PI * 1.75);
 					if ((horizontal && abs(uv.y - tan(angle) * uv.x) < tube) || (!horizontal && abs(uv.x - 1.0 / tan(angle) * uv.y) < tube))
-						if (cos(angle) * uv.x > 0.0)
+						if (cos(angle) * uv.x > 0.0 && sin(angle) * uv.y > 0.0)
 							gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 				}
 	%body
