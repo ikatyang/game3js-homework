@@ -856,6 +856,9 @@
 				folderDetailBM.add(ballisticMissile, 'state', ['up', 'front', 'down']).listen();
 				folderDetailBM.add(ballisticMissile, 'enoughHeight', 0, 400);
 				folderDetailBM.add(ballisticMissile, 'enoughClosed', 0, 800);
+				folderDetailBM.add(ballisticMissile, 'maxForce', 0, 200);
+				folderDetailBM.add(ballisticMissile, 'maxSpeed', 0, 200);
+				folderDetailBM.add(ballisticMissile, 'maxAvoidForce', 0, 200);
 				
 				var folderABM = gui.addFolder('Anti Ballistic Missile');
 				folderABM.add(window, 'launchAntiBallisticMissile').name('Launch');
@@ -864,6 +867,9 @@
 				
 				var folderDetailABM = folderABM.addFolder('ABM Detail');
 				folderDetailABM.add(antiBallisticMissile, 'predictTime', 0.5, 5);
+				folderDetailABM.add(antiBallisticMissile, 'maxForce', 0, 200);
+				folderDetailABM.add(antiBallisticMissile, 'maxSpeed', 0, 200);
+				folderDetailABM.add(antiBallisticMissile, 'maxAvoidForce', 0, 200);
 			}
 			
 			function createRadar(radius) {
