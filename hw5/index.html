@@ -480,7 +480,7 @@
       			var steerOffset = offsetProj.clone().sub(offset);
       			
       			var inFront = (offset.clone().dot(this.velocity) > 0);
-      			var needBlock = (steerOffset.length() < obstacle.radius + this.geometry.parameters.radius);
+      			var needBlock = (steerOffset.length() < obstacle.radius + this.geometry.boundingSphere.radius);
       			var closeEnough = (offsetProjLength < ahead + obstacle.radius);
       			
       			if (inFront && needBlock && closeEnough && offsetProjLength < offsetProjLengthMin) {
