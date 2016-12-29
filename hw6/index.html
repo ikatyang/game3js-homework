@@ -30,6 +30,16 @@
       var clock = new THREE.Clock();
       var character;
       
+      var elapsedRatio = 0;
+      
+      var bodyShake = 5;
+      var walkLength = 30;
+      var walkHeight = 10;
+      var armY = 0;
+      var armRadiusY = 5;
+      var armRadiusZ = 10;
+      var period = 2;
+      
       init();
       animate();
       
@@ -61,6 +71,15 @@
       	
       	character.skeletonHelper = skeletonHelper;
       	character.ikSolver = new THREE.CCDIKSolver(character);
+      	
+      	var gui = new dat.GUI();
+      	gui.add(window, 'bodyShake', 0, 10);
+      	gui.add(window, 'walkLength', 0, 50);
+      	gui.add(window, 'walkHeight', 0, 30);
+      	gui.add(window, 'armY', -30, 30);
+      	gui.add(window, 'armRadiusY', 0, 30);
+      	gui.add(window, 'armRadiusZ', 0, 30);
+      	gui.add(window, 'period', 1, 30);
       }
       
       function onWindowResize() {
@@ -73,11 +92,67 @@
       
       	var delta = clock.getDelta();
       	
+      	elapsedRatio += delta / period;
+      	
+      	var elapsed = elapsedRatio * period;
+      	
+      	var halfPeriod = period / 2;
+      	
+      	var elapsed1 = elapsed;
+      	var elapsed2 = elapsed + halfPeriod;
+      	
+      	var t0 = elapsed % halfPeriod;
+      	var t1 = elapsed1 % period;
+      	var t2 = elapsed2 % period;
+      	
+      	character.position.z += delta * walkLength / halfPeriod;
+      	if (character.position.z > 200)
+      		character.position.z *= -1;
+      	
+      	updateBodyShake(t0 / halfPeriod, bodyShake);
+      	updateArmTarget(character.leftArmTarget, t1 / period, armY, armRadiusY, armRadiusZ);
+      	updateArmTarget(character.rightArmTarget, t2 / period, armY, armRadiusY, armRadiusZ);
+      	updateLegTarget(character.leftLegTarget, t2 / period, walkHeight, walkLength);
+      	updateLegTarget(character.rightLegTarget, t1 / period, walkHeight, walkLength);
+      	
       	character.skeletonHelper.update();
       	character.ikSolver.update();
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
+      }
+      
+      function updateBodyShake(tRatio, shake) {
+      	character.position.y = (60 - shake) + Math.sin(tRatio * Math.PI) * shake;
+      }
+      
+      function updateArmTarget(armTarget, tRatio, originY, radiusY, radiusZ) {
+      	
+      	var ratio = (tRatio < 0.5) ?
+      		tRatio * 2 :
+      		1 - (tRatio - 0.5) * 2;
+      	
+      	var angle = (ratio * 2 - 1) * (Math.PI / 2);
+      	
+      	armTarget.position.y = originY - radiusY * Math.cos(angle);
+      	armTarget.position.z = radiusZ * Math.sin(angle);
+      }
+      
+      function updateLegTarget(legTarget, tRatio, height, length) {
+      	
+      	if (tRatio < 0.5) {
+      		
+      		var ratio = tRatio * 2;
+      		
+      		legTarget.position.y = -character.position.y + height * Math.abs(Math.sin(ratio * Math.PI));
+      		legTarget.position.z = (ratio - 0.5) * length;
+      	} else {
+      	
+      		var ratio = (tRatio - 0.5) * 2;
+      		
+      		legTarget.position.y = -character.position.y;
+      		legTarget.position.z = (0.5 - ratio) * length;
+      	}
       }
       
       function createCharacter() {
