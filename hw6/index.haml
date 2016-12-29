@@ -176,55 +176,63 @@
 						
 							var leftHumerus = new THREE.Bone();
 							leftHumerus.name = 'LeftHumerus';
-							leftHumerus.position.x = upperarmLength * 1;
+							leftHumerus.position.y = upperarmLength * -1;
 							leftClavicle.add(leftHumerus);
 							bones.push(leftHumerus);
 						
 							var rightHumerus = new THREE.Bone();
 							rightHumerus.name = 'RightHumerus';
-							rightHumerus.position.x = upperarmLength * -1;
+							rightHumerus.position.y = upperarmLength * -1;
 							rightClavicle.add(rightHumerus);
 							bones.push(rightHumerus);
 							
 								var leftUlna = new THREE.Bone();
 								leftUlna.name = 'LeftUlna';
-								leftUlna.position.x = forearmLength * 1;
+								leftUlna.position.y = forearmLength * -1;
 								leftHumerus.add(leftUlna);
 								bones.push(leftUlna);
 							
 								var rightUlna = new THREE.Bone();
 								rightUlna.name = 'RightUlna';
-								rightUlna.position.x = forearmLength * -1;
+								rightUlna.position.y = forearmLength * -1;
 								rightHumerus.add(rightUlna);
 								bones.push(rightUlna);
 				
 				var leftArmTarget = new THREE.Bone();
 				leftArmTarget.name = 'LeftArmTarget';
+				leftArmTarget.position.x = bodyWidth * 0.5;
 				root.add(leftArmTarget);
 				bones.push(leftArmTarget);
+				character.leftArmTarget = leftArmTarget;
 				
 				var rightArmTarget = new THREE.Bone();
 				rightArmTarget.name = 'RightArmTarget';
+				rightArmTarget.position.x = bodyWidth * -0.5;
 				root.add(rightArmTarget);
 				bones.push(rightArmTarget);
+				character.rightArmTarget = rightArmTarget;
 				
 				var leftLegTarget = new THREE.Bone();
 				leftLegTarget.name = 'LeftLegTarget';
+				leftLegTarget.position.x = thighGap * 0.5;
 				root.add(leftLegTarget);
 				bones.push(leftLegTarget);
+				character.leftLegTarget = leftLegTarget;
 				
 				var rightLegTarget = new THREE.Bone();
 				rightLegTarget.name = 'RightLegTarget';
+				rightLegTarget.position.x = thighGap * -0.5;
 				root.add(rightLegTarget);
 				bones.push(rightLegTarget);
+				character.rightLegTarget = rightLegTarget;
 				
 				addIk(leftArmTarget, leftUlna, [
-					{ bone: leftHumerus, limitation: new THREE.Vector3(1, 0, 0) },
+					{ bone: leftHumerus, limitation: new THREE.Vector3(-1, 0, 0) },
 					{ bone: leftClavicle },
 				], 10);
 				
 				addIk(rightArmTarget, rightUlna, [
-					{ bone: rightHumerus, limitation: new THREE.Vector3(1, 0, 0) },
+					{ bone: rightHumerus, limitation: new THREE.Vector3(-1, 0, 0) },
 					{ bone: rightClavicle },
 				], 10);
 				
@@ -300,8 +308,8 @@
 					new THREE.Vector3(1, 1, 1)
 				));
 				addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), leftClavicle, new THREE.Matrix4().compose(
-					new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 0.5, bodyHeight - upperarmRadius, 0),
-					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.5, 'XYZ')),
+					new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius + upperarmLength * -0.5, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				
@@ -312,32 +320,32 @@
 					new THREE.Vector3(1, 1, 1)
 				));
 				addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), rightClavicle, new THREE.Matrix4().compose(
-					new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -0.5, bodyHeight - upperarmRadius, 0),
-					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * -0.5, 'XYZ')),
+					new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius + upperarmLength * -0.5, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				
 				// left-forearm
 				addGeometry(new THREE.SphereGeometry(forearmRadius), leftHumerus, new THREE.Matrix4().compose(
-					new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 1, bodyHeight - upperarmRadius, 0),
+					new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius - upperarmLength, 0),
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), leftHumerus, new THREE.Matrix4().compose(
-					new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 1 + forearmLength * 0.5, bodyHeight - upperarmRadius, 0),
-					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.5, 'XYZ')),
+					new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius + upperarmLength * -1 + forearmLength * -0.5, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				
 				// right-forearm
 				addGeometry(new THREE.SphereGeometry(forearmRadius), rightHumerus, new THREE.Matrix4().compose(
-					new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -1, bodyHeight - upperarmRadius, 0),
+					new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius - upperarmLength, 0),
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), rightHumerus, new THREE.Matrix4().compose(
-					new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -1 + forearmLength * -0.5, bodyHeight - upperarmRadius, 0),
-					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * -0.5, 'XYZ')),
+					new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius + upperarmLength * -1 + forearmLength * -0.5, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				
