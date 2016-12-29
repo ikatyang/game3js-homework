@@ -97,6 +97,12 @@
 				var calfRadius = 4;
 				var calfLength = 30;
 				
+				var upperarmRadius = 4;
+				var upperarmLength = 20;
+				
+				var forearmRadius = 3;
+				var forearmLength = 20;
+				
 				var bones = [];
 				
 				var root = new THREE.Bone();
@@ -146,9 +152,45 @@
 					
 					var manubrium = new THREE.Bone();
 					manubrium.name = 'Manubrium';
-					manubrium.position.y = bodyHeight;
+					manubrium.position.y = bodyHeight - upperarmRadius;
 					sacrum.add(manubrium);
 					bones.push(manubrium);
+					
+						var leftClavicle = new THREE.Bone();
+						leftClavicle.name = 'LeftClavicle';
+						leftClavicle.position.x = bodyWidth * 0.5;
+						manubrium.add(leftClavicle);
+						bones.push(leftClavicle);
+					
+						var rightClavicle = new THREE.Bone();
+						rightClavicle.name = 'RightClavicle';
+						rightClavicle.position.x = bodyWidth * -0.5;
+						manubrium.add(rightClavicle);
+						bones.push(rightClavicle);
+						
+							var leftHumerus = new THREE.Bone();
+							leftHumerus.name = 'LeftHumerus';
+							leftHumerus.position.x = upperarmLength * 1;
+							leftClavicle.add(leftHumerus);
+							bones.push(leftHumerus);
+						
+							var rightHumerus = new THREE.Bone();
+							rightHumerus.name = 'RightHumerus';
+							rightHumerus.position.x = upperarmLength * -1;
+							rightClavicle.add(rightHumerus);
+							bones.push(rightHumerus);
+							
+								var leftUlna = new THREE.Bone();
+								leftUlna.name = 'LeftUlna';
+								leftUlna.position.x = forearmLength * 1;
+								leftHumerus.add(leftUlna);
+								bones.push(leftUlna);
+							
+								var rightUlna = new THREE.Bone();
+								rightUlna.name = 'RightUlna';
+								rightUlna.position.x = forearmLength * -1;
+								rightHumerus.add(rightUlna);
+								bones.push(rightUlna);
 				
 				// body
 				addGeometry(new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyDepth), function (vertex) {
@@ -256,6 +298,102 @@
 				}, new THREE.Matrix4().compose(
 					new THREE.Vector3(thighGap * -0.5, thighLength * -1 + calfLength * -0.5, 0),
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				
+				// left-upperarm
+				addGeometry(new THREE.SphereGeometry(upperarmRadius), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(leftClavicle), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(leftClavicle), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 0.5, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.5, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				
+				// right-upperarm
+				addGeometry(new THREE.SphereGeometry(upperarmRadius), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(rightClavicle), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(rightClavicle), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -0.5, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * -0.5, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				
+				// left-forearm
+				addGeometry(new THREE.SphereGeometry(forearmRadius), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(leftHumerus), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 1, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(leftHumerus), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 1 + forearmLength * 0.5, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.5, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				
+				// right-forearm
+				addGeometry(new THREE.SphereGeometry(forearmRadius), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(rightHumerus), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -1, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+					new THREE.Vector3(1, 1, 1)
+				));
+				addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), function (vertex) {
+					
+					return [
+						new THREE.Vector4(bones.indexOf(rightHumerus), 0, 0, 0),
+						new THREE.Vector4(1, 0, 0, 0)];
+						
+				}, new THREE.Matrix4().compose(
+					new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -1 + forearmLength * -0.5, bodyHeight - upperarmRadius, 0),
+					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * -0.5, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
 				
