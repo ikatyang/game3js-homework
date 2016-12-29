@@ -26,7 +26,7 @@
 		:javascript
 			var scene, camera, renderer, controls;
 			var clock = new THREE.Clock();
-			var character, skeletonHelper;
+			var character;
 			
 			init();
 			animate();
@@ -54,9 +54,10 @@
 				character = createCharacter();
 				scene.add(character);
 				
-				skeletonHelper = new THREE.SkeletonHelper(character);
+				var skeletonHelper = new THREE.SkeletonHelper(character);
 				scene.add(skeletonHelper);
 				
+				character.skeletonHelper = skeletonHelper;
 				character.ikSolver = new THREE.CCDIKSolver(character);
 			}
 			
@@ -70,7 +71,7 @@
 			
 				var delta = clock.getDelta();
 				
-				skeletonHelper.update();
+				character.skeletonHelper.update();
 				character.ikSolver.update();
 				controls.update();
 				requestAnimationFrame(animate);
