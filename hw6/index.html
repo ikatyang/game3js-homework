@@ -195,205 +195,103 @@
       					bones.push(rightUlna);
       	
       	// body
-      	addGeometry(new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyDepth), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(sacrum), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyDepth), sacrum, new THREE.Matrix4().compose(
       		new THREE.Vector3(0, bodyHeight * 0.5, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// left-thigh
-      	addGeometry(new THREE.SphereGeometry(thighRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftHip), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(thighRadius), leftHip, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * 0.5, 0, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(thighRadius, calfRadius, thighLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftHip), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(thighRadius, calfRadius, thighLength), leftHip, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * 0.5, thighLength * -0.5, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// right-thigh
-      	addGeometry(new THREE.SphereGeometry(thighRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightHip), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(thighRadius), rightHip, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * -0.5, 0, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(thighRadius, calfRadius, thighLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightHip), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(thighRadius, calfRadius, thighLength), rightHip, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * -0.5, thighLength * -0.5, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// left-calf
-      	addGeometry(new THREE.SphereGeometry(calfRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftFemur), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(calfRadius), leftFemur, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * 0.5, thighLength * -1, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(calfRadius, calfRadius, calfLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftFemur), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(calfRadius, calfRadius, calfLength), leftFemur, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * 0.5, thighLength * -1 + calfLength * -0.5, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// right-calf
-      	addGeometry(new THREE.SphereGeometry(calfRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightFemur), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(calfRadius), rightFemur, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * -0.5, thighLength * -1, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(calfRadius, calfRadius, calfLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightFemur), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(calfRadius, calfRadius, calfLength), rightFemur, new THREE.Matrix4().compose(
       		new THREE.Vector3(thighGap * -0.5, thighLength * -1 + calfLength * -0.5, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// left-upperarm
-      	addGeometry(new THREE.SphereGeometry(upperarmRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftClavicle), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(upperarmRadius), leftClavicle, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftClavicle), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), leftClavicle, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 0.5, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.5, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// right-upperarm
-      	addGeometry(new THREE.SphereGeometry(upperarmRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightClavicle), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(upperarmRadius), rightClavicle, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightClavicle), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(upperarmRadius, forearmRadius, upperarmLength), rightClavicle, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -0.5, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * -0.5, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// left-forearm
-      	addGeometry(new THREE.SphereGeometry(forearmRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftHumerus), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(forearmRadius), leftHumerus, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 1, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(leftHumerus), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), leftHumerus, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * 0.5 + upperarmLength * 1 + forearmLength * 0.5, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * 0.5, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
       	
       	// right-forearm
-      	addGeometry(new THREE.SphereGeometry(forearmRadius), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightHumerus), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.SphereGeometry(forearmRadius), rightHumerus, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -1, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
       	));
-      	addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), function (vertex) {
-      		
-      		return [
-      			new THREE.Vector4(bones.indexOf(rightHumerus), 0, 0, 0),
-      			new THREE.Vector4(1, 0, 0, 0)];
-      			
-      	}, new THREE.Matrix4().compose(
+      	addGeometry(new THREE.CylinderGeometry(forearmRadius, forearmRadius, forearmLength), rightHumerus, new THREE.Matrix4().compose(
       		new THREE.Vector3(bodyWidth * -0.5 + upperarmLength * -1 + forearmLength * -0.5, bodyHeight - upperarmRadius, 0),
       		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI * -0.5, 'XYZ')),
       		new THREE.Vector3(1, 1, 1)
@@ -402,12 +300,11 @@
       	character.add(root);
       	character.bind(new THREE.Skeleton(bones));
       	
-      	function addGeometry(geometry, calcSkinParams, matrix) {
+      	function addGeometry(geometry, bone, matrix) {
       		character.geometry.merge(geometry, matrix);
       		for (var i = 0; i < geometry.vertices.length; i++) {
-      			var skinParams = calcSkinParams(geometry.vertices[i], geometry.vertices, i);
-      			character.geometry.skinIndices.push(skinParams[0]);
-      			character.geometry.skinWeights.push(skinParams[1]);
+      			character.geometry.skinIndices.push(new THREE.Vector4(bones.indexOf(bone), 0, 0, 0));
+      			character.geometry.skinWeights.push(new THREE.Vector4(1, 0, 0, 0));
       		}
       	}
       }
