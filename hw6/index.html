@@ -7,6 +7,7 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r81/three.min.js'></script>
     <script src='../src/OrbitControls.js'></script>
+    <script src='../src/CCDIKSolver.js'></script>
     <style>
       body {
       	margin: 0;
@@ -57,6 +58,8 @@
       	
       	skeletonHelper = new THREE.SkeletonHelper(character);
       	scene.add(skeletonHelper);
+      	
+      	character.ikSolver = new THREE.CCDIKSolver(character);
       }
       
       function onWindowResize() {
@@ -70,6 +73,7 @@
       	var delta = clock.getDelta();
       	
       	skeletonHelper.update();
+      	character.ikSolver.update();
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
@@ -106,6 +110,7 @@
       	var forearmLength = 20;
       	
       	var bones = [];
+      	var iks = character.geometry.iks = [];
       	
       	var root = new THREE.Bone();
       	root.name = 'Root';
@@ -193,6 +198,46 @@
       					rightUlna.position.x = forearmLength * -1;
       					rightHumerus.add(rightUlna);
       					bones.push(rightUlna);
+      	
+      	var leftArmTarget = new THREE.Bone();
+      	leftArmTarget.name = 'LeftArmTarget';
+      	root.add(leftArmTarget);
+      	bones.push(leftArmTarget);
+      	
+      	var rightArmTarget = new THREE.Bone();
+      	rightArmTarget.name = 'RightArmTarget';
+      	root.add(rightArmTarget);
+      	bones.push(rightArmTarget);
+      	
+      	var leftLegTarget = new THREE.Bone();
+      	leftLegTarget.name = 'LeftLegTarget';
+      	root.add(leftLegTarget);
+      	bones.push(leftLegTarget);
+      	
+      	var rightLegTarget = new THREE.Bone();
+      	rightLegTarget.name = 'RightLegTarget';
+      	root.add(rightLegTarget);
+      	bones.push(rightLegTarget);
+      	
+      	addIk(leftArmTarget, leftUlna, [
+      		{ bone: leftHumerus, limitation: new THREE.Vector3(1, 0, 0) },
+      		{ bone: leftClavicle },
+      	], 10);
+      	
+      	addIk(rightArmTarget, rightUlna, [
+      		{ bone: rightHumerus, limitation: new THREE.Vector3(1, 0, 0) },
+      		{ bone: rightClavicle },
+      	], 10);
+      	
+      	addIk(leftLegTarget, leftTibia, [
+      		{ bone: leftFemur, limitation: new THREE.Vector3(1, 0, 0) },
+      		{ bone: leftHip },
+      	], 10);
+      	
+      	addIk(rightLegTarget, rightTibia, [
+      		{ bone: rightFemur, limitation: new THREE.Vector3(1, 0, 0) },
+      		{ bone: rightHip },
+      	], 10);
       	
       	// body
       	addGeometry(new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyDepth), sacrum, new THREE.Matrix4().compose(
@@ -306,6 +351,27 @@
       			character.geometry.skinIndices.push(new THREE.Vector4(bones.indexOf(bone), 0, 0, 0));
       			character.geometry.skinWeights.push(new THREE.Vector4(1, 0, 0, 0));
       		}
+      	}
+      	
+      	function addIk(target, effector, links, iterator, minAngle, maxAngle) {
+      		
+      		var ik = {
+      			target: bones.indexOf(target),
+      			effector: bones.indexOf(effector),
+      			iterator: iterator,
+      			minAngle: minAngle,
+      			maxAngle: maxAngle,
+      			links: [],
+      		};
+      		
+      		for (var i = 0; i < links.length; i++)
+      			ik.links.push({
+      				enabled: links[i].enabled,
+      				limitation: links[i].limitation,
+      				index: bones.indexOf(links[i].bone),
+      			});
+      		
+      		iks.push(ik);
       	}
       }
     </script>
