@@ -27,6 +27,7 @@
     <script>
       var scene, camera, renderer, controls;
       var clock = new THREE.Clock();
+      var character, skeletonHelper;
       
       init();
       animate();
@@ -47,6 +48,15 @@
       	
       	var gridXZ = new THREE.GridHelper(200, 20, 0xff0000, 0xffffff);
       	scene.add(gridXZ);
+      	
+      	var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+      	scene.add(light);
+      	
+      	character = createCharacter();
+      	scene.add(character);
+      	
+      	skeletonHelper = new THREE.SkeletonHelper(character);
+      	scene.add(skeletonHelper);
       }
       
       function onWindowResize() {
@@ -59,9 +69,71 @@
       
       	var delta = clock.getDelta();
       	
+      	skeletonHelper.update();
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
+      }
+      
+      function createCharacter() {
+      
+      	var geometry = new THREE.Geometry();
+      	var material = new THREE.MeshPhongMaterial({ skinning: true, color: 0xff1234 });
+      	
+      	var character = new THREE.SkinnedMesh(geometry, material);
+      	initCharacter(character);
+      	
+      	return character;
+      }
+      
+      function initCharacter(character) {
+      	
+      	var bodyWidth = 30;
+      	var bodyHeight = 40;
+      	var bodyDepth = 20;
+      	
+      	var bones = [];
+      	
+      	var root = new THREE.Bone();
+      	root.name = 'Root';
+      	bones.push(root);
+      	
+      		var sacrum = new THREE.Bone();
+      		sacrum.name = 'Sacrum';
+      		root.add(sacrum);
+      		bones.push(sacrum);
+      		
+      		var manubrium = new THREE.Bone();
+      		manubrium.name = 'Manubrium';
+      		manubrium.position.y = bodyHeight;
+      		sacrum.add(manubrium);
+      		bones.push(manubrium);
+      	
+      	addGeometry(new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyDepth), function (vertex) {
+      		
+      		var bone = (vertex.y > 0) ? manubrium : sacrum;
+      		
+      		return [
+      			new THREE.Vector4(bones.indexOf(bone), 0, 0, 0),
+      			new THREE.Vector4(1, 0, 0, 0)];
+      			
+      	}, new THREE.Matrix4().compose(
+      		new THREE.Vector3(0, bodyHeight * 0.5, 0),
+      		new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
+      		new THREE.Vector3(1, 1, 1)
+      	));
+      	
+      	character.add(root);
+      	character.bind(new THREE.Skeleton(bones));
+      	
+      	function addGeometry(geometry, calcSkinParams, matrix) {
+      		character.geometry.merge(geometry, matrix);
+      		for (var i = 0; i < geometry.vertices.length; i++) {
+      			var skinParams = calcSkinParams(geometry.vertices[i], geometry.vertices, i);
+      			character.geometry.skinIndices.push(skinParams[0]);
+      			character.geometry.skinWeights.push(skinParams[1]);
+      		}
+      	}
       }
     </script>
   </body>
