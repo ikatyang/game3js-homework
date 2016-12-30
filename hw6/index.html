@@ -32,6 +32,8 @@
       
       var elapsedRatio = 0;
       
+      var enableIK = true;
+      var showSkeleton = true;
       var bodyShake = 5;
       var walkLength = 30;
       var walkHeight = 10;
@@ -73,6 +75,10 @@
       	character.ikSolver = new THREE.CCDIKSolver(character);
       	
       	var gui = new dat.GUI();
+      	gui.add(window, 'enableIK');
+      	gui.add(window, 'showSkeleton').onChange(function (value) {
+      		skeletonHelper.visible = value;
+      	});
       	gui.add(window, 'bodyShake', 0, 10);
       	gui.add(window, 'walkLength', 0, 50);
       	gui.add(window, 'walkHeight', 0, 30);
@@ -115,8 +121,10 @@
       	updateLegTarget(character.leftLegTarget, t2 / period, walkHeight, walkLength);
       	updateLegTarget(character.rightLegTarget, t1 / period, walkHeight, walkLength);
       	
+      	if (enableIK)
+      		character.ikSolver.update();
+      	
       	character.skeletonHelper.update();
-      	character.ikSolver.update();
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
