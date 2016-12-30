@@ -146,10 +146,10 @@
 					legTarget.position.z = (ratio - 0.5) * length;
 				} else {
 				
-					var ratio = (tRatio - 0.5) * 2;
+					var ratio = 1 - (tRatio - 0.5) * 2;
 					
 					legTarget.position.y = -character.position.y;
-					legTarget.position.z = (0.5 - ratio) * length;
+					legTarget.position.z = (ratio - 0.5) * length;
 				}
 			}
 			
