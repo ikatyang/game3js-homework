@@ -29,6 +29,7 @@
 			var character, ladder;
 			
 			var enableIK = true;
+			var showModel = true;
 			var showSkeleton = true;
 			
 			var period = 2;
@@ -140,6 +141,9 @@
 				
 				var gui = new dat.GUI();
 				gui.add(window, 'enableIK');
+				gui.add(window, 'showModel').onChange(function (value) {
+					character.visible = value;
+				});
 				gui.add(window, 'showSkeleton').onChange(function (value) {
 					skeletonHelper.visible = value;
 				});
