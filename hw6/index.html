@@ -33,6 +33,7 @@
       var enableIK = true;
       var showModel = true;
       var showSkeleton = true;
+      var showSkeletonIK = false;
       
       var period = 2;
       var option = 'walk';
@@ -97,7 +98,14 @@
       	var skeletonHelper = new THREE.SkeletonHelper(character);
       	scene.add(skeletonHelper);
       	
+      	var ikHelper = new THREE.CCDIKHelper(character);
+      	ikHelper.visible = false;
+      	ikHelper.sphereGeometry.scale(8, 8, 8);
+      	scene.add(ikHelper);
+      	
+      	character.ikHelper = ikHelper;
       	character.skeletonHelper = skeletonHelper;
+      	
       	character.position.y = 60;
       	character.ikSolver = new THREE.CCDIKSolver(character);
       	
@@ -148,6 +156,9 @@
       	});
       	gui.add(window, 'showSkeleton').onChange(function (value) {
       		skeletonHelper.visible = value;
+      	});
+      	gui.add(window, 'showSkeletonIK').onChange(function (value) {
+      		ikHelper.visible = value;
       	});
       	gui.add(window, 'period', 1, 30);
       	gui.add(window, 'option', ['walk', 'climb']).onChange(function (option) {
@@ -276,6 +287,9 @@
       	
       	if (character.skeletonHelper.visible)
       		character.skeletonHelper.update();
+      		
+      	if (character.ikHelper.visible)
+      		character.ikHelper.update();
       	
       	controls.update();
       	requestAnimationFrame(animate);
@@ -291,7 +305,7 @@
       	
       	var params = (option === 'walk') ? walkParams : climbParams;
       	
-      	var originY = params.armY;
+      	var originY = params.armY + character.skeleton.bones[0].position.y;
       	var radiusY = params.armRadiusY;
       	var radiusZ = params.armRadiusZ;
       	
@@ -307,7 +321,7 @@
       
       function updateLegTarget(legTarget, tRatio) {
       	
-      	var originY = (option === 'walk' ? walkParams : climbParams).bodyY + character.skeleton.bones[0].position.y;
+      	var originY = (option === 'walk' ? walkParams : climbParams).bodyY;
       	
       	var length = (option === 'walk') ? walkParams.walkLength : climbParams.stairDepth;
       	var height = (option === 'walk') ? walkParams.walkHeight : climbParams.stairDepth;
@@ -453,28 +467,28 @@
       	var leftArmTarget = new THREE.Bone();
       	leftArmTarget.name = 'LeftArmTarget';
       	leftArmTarget.position.x = bodyWidth * 0.5;
-      	root.add(leftArmTarget);
+      	character.add(leftArmTarget);
       	bones.push(leftArmTarget);
       	character.leftArmTarget = leftArmTarget;
       	
       	var rightArmTarget = new THREE.Bone();
       	rightArmTarget.name = 'RightArmTarget';
       	rightArmTarget.position.x = bodyWidth * -0.5;
-      	root.add(rightArmTarget);
+      	character.add(rightArmTarget);
       	bones.push(rightArmTarget);
       	character.rightArmTarget = rightArmTarget;
       	
       	var leftLegTarget = new THREE.Bone();
       	leftLegTarget.name = 'LeftLegTarget';
       	leftLegTarget.position.x = thighGap * 0.5;
-      	root.add(leftLegTarget);
+      	character.add(leftLegTarget);
       	bones.push(leftLegTarget);
       	character.leftLegTarget = leftLegTarget;
       	
       	var rightLegTarget = new THREE.Bone();
       	rightLegTarget.name = 'RightLegTarget';
       	rightLegTarget.position.x = thighGap * -0.5;
-      	root.add(rightLegTarget);
+      	character.add(rightLegTarget);
       	bones.push(rightLegTarget);
       	character.rightLegTarget = rightLegTarget;
       	
