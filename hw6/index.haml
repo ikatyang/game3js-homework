@@ -35,6 +35,14 @@
 			var option = 'walk';
 			var elapsedRatio = 0;
 			
+			var standParams = {
+				bodyShake: 0,
+				walkLength: 0,
+				walkHeight: 0,
+				armY: -30,
+				armRadiusY: 0,
+				armRadiusZ: 0,
+			};
 			var walkParams = {
 				bodyShake: 5,
 				walkLength: 30,
@@ -42,7 +50,10 @@
 				armY: 0,
 				armRadiusY: 5,
 				armRadiusZ: 10,
+				transitionPeriod: 2,
+				transitionDirection: 0,
 			};
+			var defaultWalkParams = Object.assign({}, walkParams);
 			
 			init();
 			animate();
@@ -76,6 +87,20 @@
 				character.skeletonHelper = skeletonHelper;
 				character.ikSolver = new THREE.CCDIKSolver(character);
 				
+				var gFunctions = {
+					
+					standToWalk: function () {
+						walkParams.transitionRatio = 0;
+						walkParams.transitionDirection = 1;
+					},
+					
+					walkToStand: function () {
+						walkParams.transitionRatio = 0;
+						walkParams.transitionDirection = -1;
+					},
+					
+				};
+				
 				var gui = new dat.GUI();
 				gui.add(window, 'enableIK');
 				gui.add(window, 'showSkeleton').onChange(function (value) {
@@ -87,18 +112,52 @@
 				});
 				
 				var walk = gui.addFolder('Walk');
-				walk.add(walkParams, 'bodyShake', 0, 10);
-				walk.add(walkParams, 'walkLength', 0, 50);
-				walk.add(walkParams, 'walkHeight', 0, 30);
-				walk.add(walkParams, 'armY', -30, 30);
-				walk.add(walkParams, 'armRadiusY', 0, 30);
-				walk.add(walkParams, 'armRadiusZ', 0, 30);
+				addWalkParams(walk, walkParams);
+				
+				walk.add(gFunctions, 'standToWalk');
+				walk.add(gFunctions, 'walkToStand');
+				walk.add(walkParams, 'transitionPeriod', 0.3, 30).name('transPeriod');
+				
+				var defaultWalk = walk.addFolder('Default');
+				addWalkParams(defaultWalk, defaultWalkParams);
+				
+				function addWalkParams(folder, walkParams) {
+					folder.add(walkParams, 'bodyShake', 0, 10).listen();
+					folder.add(walkParams, 'walkLength', 0, 50).listen();
+					folder.add(walkParams, 'walkHeight', 0, 30).listen();
+					folder.add(walkParams, 'armY', -30, 30).listen();
+					folder.add(walkParams, 'armRadiusY', 0, 30).listen();
+					folder.add(walkParams, 'armRadiusZ', 0, 30).listen();
+				}
 			}
 			
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
+			
+			function walkTransition(delta) {
+				
+				var targetParams = (walkParams.transitionDirection > 0) ? defaultWalkParams : standParams;
+				var ratioDelta = delta / walkParams.transitionPeriod;
+				
+				for (var key in standParams) {
+					
+					var value0 = walkParams[key];
+					var value1 = targetParams[key];
+					
+					var valueAbsDelta = (value1 - value0);
+					var valueDelta = valueAbsDelta / (1 - walkParams.transitionRatio) * ratioDelta;
+					
+					if (Math.abs(valueDelta) > Math.abs(valueAbsDelta))
+						valueDelta = valueAbsDelta;
+					
+					walkParams[key] += valueDelta;
+				}
+				
+				if ((walkParams.transitionRatio += ratioDelta) >= 1)
+					walkParams.transitionDirection = 0;
 			}
 
 			function animate() {
@@ -119,6 +178,9 @@
 				var t2 = elapsed2 % period;
 				
 				if (option === 'walk') {
+				
+					if (walkParams.transitionDirection !== 0)
+						walkTransition(delta);
 				
 					character.position.z += delta * walkParams.walkLength / halfPeriod;
 					if (character.position.z > 200)
