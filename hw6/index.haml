@@ -606,12 +606,12 @@
 					}
 				}
 				
-				function addIk(target, effector, links, iterator, minAngle, maxAngle) {
+				function addIk(target, effector, links, iteration, minAngle, maxAngle) {
 					
 					var ik = {
 						target: bones.indexOf(target),
 						effector: bones.indexOf(effector),
-						iterator: iterator,
+						iteration: iteration,
 						minAngle: minAngle,
 						maxAngle: maxAngle,
 						links: [],
