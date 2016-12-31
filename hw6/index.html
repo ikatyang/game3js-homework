@@ -30,17 +30,21 @@
       var clock = new THREE.Clock();
       var character;
       
-      var elapsedRatio = 0;
-      
       var enableIK = true;
       var showSkeleton = true;
-      var bodyShake = 5;
-      var walkLength = 30;
-      var walkHeight = 10;
-      var armY = 0;
-      var armRadiusY = 5;
-      var armRadiusZ = 10;
+      
       var period = 2;
+      var option = 'walk';
+      var elapsedRatio = 0;
+      
+      var walkParams = {
+      	bodyShake: 5,
+      	walkLength: 30,
+      	walkHeight: 10,
+      	armY: 0,
+      	armRadiusY: 5,
+      	armRadiusZ: 10,
+      };
       
       init();
       animate();
@@ -79,13 +83,18 @@
       	gui.add(window, 'showSkeleton').onChange(function (value) {
       		skeletonHelper.visible = value;
       	});
-      	gui.add(window, 'bodyShake', 0, 10);
-      	gui.add(window, 'walkLength', 0, 50);
-      	gui.add(window, 'walkHeight', 0, 30);
-      	gui.add(window, 'armY', -30, 30);
-      	gui.add(window, 'armRadiusY', 0, 30);
-      	gui.add(window, 'armRadiusZ', 0, 30);
       	gui.add(window, 'period', 1, 30);
+      	gui.add(window, 'option', ['walk']).onChange(function (option) {
+      		character.position.set(0, 0, 0);
+      	});
+      	
+      	var walk = gui.addFolder('Walk');
+      	walk.add(walkParams, 'bodyShake', 0, 10);
+      	walk.add(walkParams, 'walkLength', 0, 50);
+      	walk.add(walkParams, 'walkHeight', 0, 30);
+      	walk.add(walkParams, 'armY', -30, 30);
+      	walk.add(walkParams, 'armRadiusY', 0, 30);
+      	walk.add(walkParams, 'armRadiusZ', 0, 30);
       }
       
       function onWindowResize() {
@@ -111,30 +120,40 @@
       	var t1 = elapsed1 % period;
       	var t2 = elapsed2 % period;
       	
-      	character.position.z += delta * walkLength / halfPeriod;
-      	if (character.position.z > 200)
-      		character.position.z *= -1;
+      	if (option === 'walk') {
       	
-      	updateBodyShake(t0 / halfPeriod, bodyShake);
-      	updateArmTarget(character.leftArmTarget, t1 / period, armY, armRadiusY, armRadiusZ);
-      	updateArmTarget(character.rightArmTarget, t2 / period, armY, armRadiusY, armRadiusZ);
-      	updateLegTarget(character.leftLegTarget, t2 / period, walkHeight, walkLength);
-      	updateLegTarget(character.rightLegTarget, t1 / period, walkHeight, walkLength);
+      		character.position.z += delta * walkParams.walkLength / halfPeriod;
+      		if (character.position.z > 200)
+      			character.position.z *= -1;
+      		
+      		updateWalk_BodyShake(t0 / halfPeriod);
+      		updateWalk_ArmTarget(character.leftArmTarget, t1 / period);
+      		updateWalk_ArmTarget(character.rightArmTarget, t2 / period);
+      		updateWalk_LegTarget(character.leftLegTarget, t2 / period);
+      		updateWalk_LegTarget(character.rightLegTarget, t1 / period);
+      	}
       	
       	if (enableIK)
       		character.ikSolver.update();
       	
-      	character.skeletonHelper.update();
+      	if (character.skeletonHelper.visible)
+      		character.skeletonHelper.update();
+      	
       	controls.update();
       	requestAnimationFrame(animate);
       	renderer.render(scene, camera);
       }
       
-      function updateBodyShake(tRatio, shake) {
+      function updateWalk_BodyShake(tRatio) {
+      	var shake = walkParams.bodyShake;
       	character.position.y = (60 - shake) + Math.sin(tRatio * Math.PI) * shake;
       }
       
-      function updateArmTarget(armTarget, tRatio, originY, radiusY, radiusZ) {
+      function updateWalk_ArmTarget(armTarget, tRatio) {
+      	
+      	var originY = walkParams.armY;
+      	var radiusY = walkParams.armRadiusY;
+      	var radiusZ = walkParams.armRadiusZ;
       	
       	var ratio = (tRatio < 0.5) ?
       		tRatio * 2 :
@@ -146,7 +165,10 @@
       	armTarget.position.z = radiusZ * Math.sin(angle);
       }
       
-      function updateLegTarget(legTarget, tRatio, height, length) {
+      function updateWalk_LegTarget(legTarget, tRatio) {
+      	
+      	var length = walkParams.walkLength;
+      	var height = walkParams.walkHeight;
       	
       	if (tRatio < 0.5) {
       		
