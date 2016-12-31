@@ -26,7 +26,7 @@
 		:javascript
 			var scene, camera, renderer, controls;
 			var clock = new THREE.Clock();
-			var character;
+			var character, ladder;
 			
 			var enableIK = true;
 			var showSkeleton = true;
@@ -44,6 +44,7 @@
 				armRadiusZ: 0,
 			};
 			var walkParams = {
+				bodyY: 60,
 				bodyShake: 5,
 				walkLength: 30,
 				walkHeight: 10,
@@ -54,6 +55,15 @@
 				transitionDirection: 0,
 			};
 			var defaultWalkParams = Object.assign({}, walkParams);
+			
+			var climbParams = {
+				bodyY: 45,
+				stairDepth: 20,
+				bodyShake: 5,
+				armY: 0,
+				armRadiusY: 5,
+				armRadiusZ: 10,
+			};
 			
 			init();
 			animate();
@@ -85,7 +95,34 @@
 				scene.add(skeletonHelper);
 				
 				character.skeletonHelper = skeletonHelper;
+				character.position.y = 60;
 				character.ikSolver = new THREE.CCDIKSolver(character);
+				
+				ladder = new THREE.Object3D();
+				ladder.stairs = [];
+				ladder.visible = false;
+				scene.add(ladder);
+				
+				var stairWidth = 60;
+				var stairDepth = climbParams.stairDepth;
+				
+				var stairGeometry = new THREE.PlaneGeometry(stairWidth, stairDepth);
+				var stairMaterial = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+				
+				for (var i = 0; i < 200 / stairDepth; i++) {
+					
+					var stairZ = new THREE.Mesh(stairGeometry, stairMaterial);
+					stairZ.rotation.x = Math.PI * -0.5;
+					stairZ.position.set(0, stairDepth * i, 200 - stairDepth * (i + 0.5));
+					ladder.add(stairZ);
+					
+					ladder.stairs.push(stairZ);
+					
+					var stairY = stairZ.clone();
+					stairZ.rotation.x = 0;
+					stairZ.position.add(new THREE.Vector3(0, stairDepth * 0.5, stairDepth * -0.5));
+					ladder.add(stairY);
+				}
 				
 				var gFunctions = {
 					
@@ -107,8 +144,11 @@
 					skeletonHelper.visible = value;
 				});
 				gui.add(window, 'period', 1, 30);
-				gui.add(window, 'option', ['walk']).onChange(function (option) {
-					character.position.set(0, 0, 0);
+				gui.add(window, 'option', ['walk', 'climb']).onChange(function (option) {
+					if (option === 'walk')
+						initWalk();
+					else
+						initClimb();
 				});
 				
 				var walk = gui.addFolder('Walk');
@@ -120,6 +160,12 @@
 				
 				var defaultWalk = walk.addFolder('Default');
 				addWalkParams(defaultWalk, defaultWalkParams);
+				
+				var climb = gui.addFolder('Climb');
+				climb.add(climbParams, 'bodyShake', 0, 10);
+				climb.add(climbParams, 'armY', -30, 30);
+				climb.add(climbParams, 'armRadiusY', 0, 30);
+				climb.add(climbParams, 'armRadiusZ', 0, 30);
 				
 				function addWalkParams(folder, walkParams) {
 					folder.add(walkParams, 'bodyShake', 0, 10).listen();
@@ -159,6 +205,20 @@
 				if ((walkParams.transitionRatio += ratioDelta) >= 1)
 					walkParams.transitionDirection = 0;
 			}
+			
+			function initWalk() {
+				elapsedRatio = 0;
+				ladder.visible = false;
+				character.rotation.y = 0;
+				character.position.set(0, walkParams.bodyY, -200);
+			}
+			
+			function initClimb() {
+				elapsedRatio = 0.5
+				ladder.visible = true;
+				character.rotation.y = Math.PI;
+				character.position.set(0, climbParams.bodyY + climbParams.stairDepth * 1, 200 - climbParams.stairDepth * 0.5);
+			}
 
 			function animate() {
 			
@@ -184,14 +244,26 @@
 				
 					character.position.z += delta * walkParams.walkLength / halfPeriod;
 					if (character.position.z > 200)
-						character.position.z *= -1;
+						initWalk();
+				
 					
-					updateWalk_BodyShake(t0 / halfPeriod);
-					updateWalk_ArmTarget(character.leftArmTarget, t1 / period);
-					updateWalk_ArmTarget(character.rightArmTarget, t2 / period);
-					updateWalk_LegTarget(character.leftLegTarget, t2 / period);
-					updateWalk_LegTarget(character.rightLegTarget, t1 / period);
+				} else {
+					
+					character.position.addScaledVector(
+						new THREE.Vector3(0, 1, -1).normalize(),
+						delta * (climbParams.stairDepth * Math.sqrt(2)) / halfPeriod);
+					
+					if (character.position.z < 0)
+						initClimb();
 				}
+				
+				updateBodyShake(t0 / halfPeriod);
+			
+				updateLegTarget(character.leftLegTarget, t2 / period);
+				updateLegTarget(character.rightLegTarget, t1 / period);
+				
+				updateArmTarget(character.leftArmTarget, t1 / period);
+				updateArmTarget(character.rightArmTarget, t2 / period);
 				
 				if (enableIK)
 					character.ikSolver.update();
@@ -204,16 +276,18 @@
 				renderer.render(scene, camera);
 			}
 			
-			function updateWalk_BodyShake(tRatio) {
-				var shake = walkParams.bodyShake;
-				character.position.y = (60 - shake) + Math.sin(tRatio * Math.PI) * shake;
+			function updateBodyShake(tRatio) {
+				var shake = (option === 'walk' ? walkParams : climbParams).bodyShake;
+				character.skeleton.bones[0].position.y = -shake + Math.sin(tRatio * Math.PI) * shake;
 			}
 			
-			function updateWalk_ArmTarget(armTarget, tRatio) {
+			function updateArmTarget(armTarget, tRatio) {
 				
-				var originY = walkParams.armY;
-				var radiusY = walkParams.armRadiusY;
-				var radiusZ = walkParams.armRadiusZ;
+				var params = (option === 'walk') ? walkParams : climbParams;
+				
+				var originY = params.armY;
+				var radiusY = params.armRadiusY;
+				var radiusZ = params.armRadiusZ;
 				
 				var ratio = (tRatio < 0.5) ?
 					tRatio * 2 :
@@ -225,24 +299,29 @@
 				armTarget.position.z = radiusZ * Math.sin(angle);
 			}
 			
-			function updateWalk_LegTarget(legTarget, tRatio) {
+			function updateLegTarget(legTarget, tRatio) {
 				
-				var length = walkParams.walkLength;
-				var height = walkParams.walkHeight;
+				var originY = (option === 'walk' ? walkParams : climbParams).bodyY + character.skeleton.bones[0].position.y;
+				
+				var length = (option === 'walk') ? walkParams.walkLength : climbParams.stairDepth;
+				var height = (option === 'walk') ? walkParams.walkHeight : climbParams.stairDepth;
 				
 				if (tRatio < 0.5) {
 					
 					var ratio = tRatio * 2;
 					
-					legTarget.position.y = -character.position.y + height * Math.abs(Math.sin(ratio * Math.PI));
+					legTarget.position.y = -originY + height * Math.abs(Math.sin(ratio * Math.PI));
 					legTarget.position.z = (ratio - 0.5) * length;
 				} else {
 				
 					var ratio = 1 - (tRatio - 0.5) * 2;
 					
-					legTarget.position.y = -character.position.y;
+					legTarget.position.y = -originY;
 					legTarget.position.z = (ratio - 0.5) * length;
 				}
+				
+				if (option === 'climb')
+					legTarget.position.y -= (1 - ratio) * height;
 			}
 			
 			function createCharacter() {
