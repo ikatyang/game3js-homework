@@ -159,11 +159,13 @@
 					ikHelper.visible = value;
 				});
 				gui.add(window, 'period', 1, 30);
-				gui.add(window, 'option', ['walk', 'climb']).onChange(function (option) {
+				gui.add(window, 'option', ['walk', 'climbUp', 'climbDown']).onChange(function (option) {
 					if (option === 'walk')
 						initWalk();
-					else
-						initClimb();
+					else if (option === 'climbUp')
+						initClimbUp();
+					else if (option === 'climbDown')
+						initClimbDown();
 				});
 				
 				var walk = gui.addFolder('Walk');
@@ -228,11 +230,18 @@
 				character.position.set(0, walkParams.bodyY, -200);
 			}
 			
-			function initClimb() {
+			function initClimbUp() {
 				elapsedRatio = 0.5
 				ladder.visible = true;
 				character.rotation.y = Math.PI;
-				character.position.set(0, climbParams.bodyY + climbParams.stairDepth * 1, 200 - climbParams.stairDepth * 0.5);
+				character.position.set(0, climbParams.bodyY + climbParams.stairDepth, climbParams.stairDepth * -0.5 + 200);
+			}
+			
+			function initClimbDown() {
+				elapsedRatio = 0.5
+				ladder.visible = true;
+				character.rotation.y = 0;
+				character.position.set(0, climbParams.bodyY + climbParams.stairDepth + 200, climbParams.stairDepth * -0.5);
 			}
 
 			function animate() {
@@ -261,15 +270,23 @@
 					if (character.position.z > 200)
 						initWalk();
 				
-					
-				} else {
+				} else if (option === 'climbUp') {
 					
 					character.position.addScaledVector(
 						new THREE.Vector3(0, 1, -1).normalize(),
 						delta * (climbParams.stairDepth * Math.sqrt(2)) / halfPeriod);
 					
 					if (character.position.z < 0)
-						initClimb();
+						initClimbUp();
+						
+				} else if (option === 'climbDown') {
+					
+					character.position.addScaledVector(
+						new THREE.Vector3(0, -1, 1).normalize(),
+						delta * (climbParams.stairDepth * Math.sqrt(2)) / halfPeriod);
+					
+					if (character.position.z > 200)
+						initClimbDown();
 				}
 				
 				updateBodyShake(t0 / halfPeriod);
@@ -338,8 +355,10 @@
 					legTarget.position.z = (ratio - 0.5) * length;
 				}
 				
-				if (option === 'climb')
+				if (option === 'climbUp')
 					legTarget.position.y -= (1 - ratio) * height;
+				else if (option === 'climbDown')
+					legTarget.position.y -= ratio * height;
 			}
 			
 			function createCharacter() {
