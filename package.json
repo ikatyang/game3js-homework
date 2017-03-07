@@ -1,7 +1,7 @@
 {
-  "name": "game3js-homework",
+  "name": "gp3js-homework",
   "author": "ikatyang",
-  "repository": "https://github.com/ikatyang/game3js-homework",
+  "repository": "https://github.com/ikatyang/gp3js-homework",
   "license": "MIT",
   "scripts": {
     "postinstall": "bundle install",
