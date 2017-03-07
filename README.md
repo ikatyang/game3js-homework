@@ -1,8 +1,12 @@
-# game3js-homework
+# gp3js-homework
 
-[![build](https://travis-ci.org/ikatyang/game3js-homework.svg)](https://travis-ci.org/ikatyang/game3js-homework)
+[![build](https://travis-ci.org/ikatyang/gp3js-homework.svg)](https://travis-ci.org/ikatyang/gp3js-homework)
 
-require `RubyGems@stable`, `Bundler@stable`, `Node.js@>=6` , `Python@3.x`
+game programming homework using three.js
+
+## Development
+
+require `RubyGems@stable`, `Bundler@stable`, `Node.js@>=6`, `Python@3.x`
 
 #### Setup
 
