@@ -5,11 +5,11 @@
 	%head
 		%meta(charset='utf-8')
 		%meta(name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no')
-		%title='Game3js Homework'
+		%title='Game Programming Homework'
 		%link(rel='stylesheet' href='res/libraries/jquery.mobile.min.css')
-		%script(src='res/libraries//jquery.min.js')
-		%script(src='res/libraries//jquery.mobile.min.js')
-		%script(src='res/libraries//jquery.lazyload.min.js')
+		%script(src='res/libraries/jquery.min.js')
+		%script(src='res/libraries/jquery.mobile.min.js')
+		%script(src='res/libraries/jquery.lazyload.min.js')
 		:javascript
 			$.mobile.ajaxEnabled = false;
 			$(function () {
@@ -34,7 +34,7 @@
 	%body
 		%div(data-role='page')
 			%div(data-role='header')
-				%h1='Game3js Homework'
+				%h1='Game Programming Homework'
 			%div(data-role='content')
 				.ui-grid-b.ui-responsive
 					- homework_ids.each_with_index  do |homework_id, index|
