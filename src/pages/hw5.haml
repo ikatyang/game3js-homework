@@ -3,10 +3,10 @@
 	%head
 		%meta(charset='utf-8')
 		%title='Game3js Homework5'
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r81/three.min.js')
-		%script(src='../src/OrbitControls.js')
+		%script(src='../res/libraries/dat.gui.min.js')
+		%script(src='../res/libraries/jquery.min.js')
+		%script(src='../res/libraries/three.r81.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
 		:css
 			body {
 				margin: 0;
@@ -136,7 +136,7 @@
 				  vec3 fade_xyz = fade(Pf0);
 				  vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
 				  vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
-				  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+				  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
 				  return 2.2 * n_xyz;
 				}
 
@@ -206,12 +206,12 @@
 				  vec3 fade_xyz = fade(Pf0);
 				  vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
 				  vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
-				  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+				  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
 				  return 2.2 * n_xyz;
 				}
 
 				// Include the Ashima code here!
-				 
+
 				varying vec2 vUv;
 				varying float noise;
 				uniform float time;
@@ -233,7 +233,7 @@
 				  noise = 10.0 *  -.10 * turbulence( .5 * normal + time );
 				  float b = 5.0 * pnoise( 0.05 * position + vec3( 2.0 * time ), vec3( 100.0 ) );
 				  float displacement = - 10. * noise + b;
-				  
+
 				  vec3 newPosition = position + normal * displacement;
 				  gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
 
@@ -272,14 +272,14 @@
 				uniform float PI;
 				varying vec2 vUv;
 				void main() {
-					
+
 					vec2 uv = vUv - 0.5;
 					float step = 1.0 / (radius * 2.0);
 					vec3 color = texture2D(texture, vUv).rgb;
-					
+
 					float tube = step * 3.0;
 					float distance = sqrt(pow(uv.x, 2.0) + pow(uv.y, 2.0));
-					
+
 					if (color != background)
 						gl_FragColor = vec4(color, 1.0);
 					else if (
@@ -294,7 +294,7 @@
 						gl_FragColor = vec4(0.0, 0.5, 0.0, 1.0);
 					else
 						gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-					
+
 					bool horizontal = (angle < PI * 0.25 || (angle > PI * 0.75 && angle < PI * 1.25) || angle > PI * 1.75);
 					if ((horizontal && abs(uv.y - tan(angle) * uv.x) < tube) || (!horizontal && abs(uv.x - 1.0 / tan(angle) * uv.y) < tube))
 						if (cos(angle) * uv.x > 0.0 && sin(angle) * uv.y > 0.0)
@@ -305,15 +305,15 @@
 		.border.abmCamera
 		:javascript
 			function OBB(mesh) {
-				
+
 				if (!mesh.geometry.boundingBox)
 					mesh.geometry.computeBoundingBox();
-				
+
 				mesh.updateMatrixWorld();
-				
+
 				this.center = mesh.localToWorld(mesh.geometry.boundingBox.getCenter());
 				this.size = mesh.geometry.boundingBox.getSize();
-				
+
 				var xAxis = new THREE.Vector3();
 				var yAxis = new THREE.Vector3();
 				var zAxis = new THREE.Vector3();
@@ -321,9 +321,9 @@
 				this.axes = [xAxis, yAxis, zAxis];
 			}
 			Object.assign(OBB.prototype, {
-				
+
 				intersectsOBB: (function () {
-					
+
 					function getProjectLength(vector, axis) {
 						var project = vector.clone().projectOnVector(axis);
 						var projectLengths = project.divide(axis).toArray();
@@ -332,7 +332,7 @@
 								return projectLengths[i];
 						return 0;
 					}
-					
+
 					function getOBBVertices(obb) {
 						var vertices = [];
 						for (var i = -0.5; i <= 0.5; i++)
@@ -344,79 +344,79 @@
 										.addScaledVector(obb.axes[2], obb.size.z * k));
 						return vertices;
 					}
-					
+
 					function satTest(obb1, obb2, axis) {
-						
+
 						var center1 = getProjectLength(obb1.center, axis);
 						var center2 = getProjectLength(obb2.center, axis);
-						
+
 						var isLeftL = (center1 < center2);
-						
+
 						var centerL = isLeftL ? center1 : center2;
 						var centerR = isLeftL ? center2 : center1;
-						
+
 						var verticesL = isLeftL ? getOBBVertices(obb1) : getOBBVertices(obb2);
 						var verticesR = isLeftL ? getOBBVertices(obb2) : getOBBVertices(obb1);
-						
+
 						var vertexLR = -Number.MAX_VALUE;
 						for (var i = 0; i < verticesL.length; i++)
 							vertexLR = Math.max(vertexLR, getProjectLength(verticesL[i], axis));
-							
+
 						var vertexRL = Number.MAX_VALUE;
 						for (var i = 0; i < verticesR.length; i++)
 							vertexRL = Math.min(vertexRL, getProjectLength(verticesR[i], axis));
-							
+
 						var lengthL = vertexLR - centerL;
 						var lengthR = centerR - vertexRL;
 						var lengthC = centerR - centerL;
-						
+
 						return (lengthL + lengthR >= lengthC);
 					}
-					
+
 					return function (obb) {
-						
+
 						var axes = [].concat(this.axes, obb.axes);
-						
+
 						for (var i = 0; i < this.axes.length; i++)
 							for (var j = 0; j < obb.axes.length; j++)
 								axes.push(this.axes[i].clone().cross(obb.axes[j]).normalize());
-						
+
 						for (var i = 0; i < axes.length; i++)
 							if (!satTest(this, obb, axes[i]))
 								return false;
-						
+
 						return true;
 					};
-					
+
 				})(),
-				
+
 			});
 		:javascript
 			function BallisticMissileGeometry(radius, height, heightRatio, radiusSegments) {
-				
+
 				THREE.Geometry.call(this);
-				
+
 				this.type = 'BallisticMissileGeometry';
-				
+
 				radiusSegments = (radiusSegments !== undefined) ? radiusSegments : 8;
-				
+
 				this.parameters = {
 					radius: radius,
 					height: height,
 					heightRatio: heightRatio,
 					radiusSegments: radiusSegments,
 				};
-				
+
 				var headHeight = height / (heightRatio + 1) * heightRatio;
 				var bodyHeight = height / (heightRatio + 1);
-				
+
 				var head = new THREE.CylinderGeometry(0, radius, headHeight, radiusSegments);
 				this.merge(head, new THREE.Matrix4().compose(
 					new THREE.Vector3(0, 0, height / 2 - headHeight / 2),
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				), 0);
-				
+
 				var body = new THREE.CylinderGeometry(radius, radius, bodyHeight, radiusSegments);
 				this.merge(body, new THREE.Matrix4().compose(
 					new THREE.Vector3(0, 0, -height / 2 + bodyHeight / 2),
@@ -428,131 +428,131 @@
 			BallisticMissileGeometry.prototype.constructor = BallisticMissileGeometry;
 		:javascript
 			function Missile(geometry, material) {
-			
+
 				THREE.Mesh.call(this, geometry, material);
-				
+
 				this.mass = 1;
-				
+
 				this.velocity = new THREE.Vector3(0, 0, 0);
 				this.target = new THREE.Vector3(0, 0, 0);
-				
+
 				this.maxForce = 50;
 				this.maxSpeed = 50;
-				
+
 				this.maxSeeAhead = 50;
 				this.maxAvoidForce = 120;
-				
+
 				this.obstacles = [];
 			}
 			Missile.prototype = Object.assign(Object.create(THREE.Mesh.prototype), {
-				
+
 				constructor: Missile,
-				
+
 				updateCenter: function () {
 					if (!this.geometry.boundingSphere)
 						this.geometry.computeBoundingSphere();
 					this.center = this.localToWorld(this.geometry.boundingSphere.center.clone());
 				},
-				
+
 				getSteerForce: function () {
 					return this.target.clone().sub(this.center)
 						.setLength(this.maxSpeed)
 						.sub(this.velocity);
 				},
-				
+
 				getAvoidForce: function () {
-					
+
 					var avoidForce = new THREE.Vector3(0, 0, 0);
-					
+
 					var ahead = this.maxSeeAhead * (this.velocity.length() / this.maxSpeed);
-					
+
 					var offsetProjLengthMin = Number.MAX_VALUE;
 					for (var i = 0; i < this.obstacles.length; i++) {
-						
+
 						var obstacle = this.obstacles[i];
-						
+
 						var offset = obstacle.center.clone().sub(this.center);
 						var offsetProj = offset.clone().projectOnVector(this.velocity);
 						var offsetProjLength = offsetProj.length();
 						var steerOffset = offsetProj.clone().sub(offset);
-						
+
 						var inFront = (offset.clone().dot(this.velocity) > 0);
 						var needBlock = (steerOffset.length() < obstacle.radius + this.geometry.boundingSphere.radius);
 						var closeEnough = (offsetProjLength < ahead + obstacle.radius);
-						
+
 						if (inFront && needBlock && closeEnough && offsetProjLength < offsetProjLengthMin) {
-							
+
 							offsetProjLengthMin = offsetProjLength;
 							avoidForce.copy(steerOffset.clone().setLength(this.maxAvoidForce));
 						}
 					}
-					
+
 					return avoidForce;
 				},
-				
+
 				updateAxisFront: function () {
 					this.updateMatrixWorld();
 					this.axisFront = this.localToWorld(new THREE.Vector3(0, 0, 1)).sub(this.position);
 				},
-				
+
 				updateRotation: function () {
-					
+
 					if (this.rotation.order !== 'YXZ')
 						this.rotation.reorder('YXZ');
-					
+
 					var rotationZ = this.rotation.z;
-					
+
 					var xAxis = this.axisFront.clone().cross(this.velocity).normalize();
 					if (xAxis.length() === 0)
 						xAxis.set(1, 0, 0);
-					
+
 					var zAxis = this.velocity.clone().normalize();
 					var yAxis = zAxis.clone().cross(xAxis).normalize();
-					
+
 					this.rotation.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis));
 					this.rotation.z = rotationZ;
 				},
-				
+
 				update: function (delta) {
-					
+
 					this.onBeforeUpdate(delta);
-					
+
 					this.updateCenter();
 					this.updateAxisFront();
-					
+
 					var force = new THREE.Vector3(0, 0, 0);
-					
+
 					var steerForce = this.getSteerForce();
 					var avoidForce = this.getAvoidForce();
-					
+
 					force.add(steerForce).add(avoidForce).clampLength(0, this.maxForce);
-					
+
 					this.velocity.addScaledVector(force, delta / this.mass).clampLength(0, this.maxSpeed);
 					this.position.addScaledVector(this.velocity, delta);
-					
+
 					this.updateRotation();
-					
+
 					this.onAfterUpdate(delta);
 				},
-				
+
 				onAfterUpdate: function () {},
 				onBeforeUpdate: function () {},
-				
+
 			});
 		:javascript
 			function BallisticMissile(geometry, material) {
-			
+
 				Missile.call(this, geometry, material);
-				
+
 				this.enoughHeight = 400;
 				this.enoughClosed = 400;
-				
+
 				this.state = 'up';
 			}
 			BallisticMissile.prototype = Object.assign(Object.create(Missile.prototype), {
-				
+
 				constructor: BallisticMissile,
-				
+
 				getDirection: function () {
 					switch (this.state) {
 						case 'up':
@@ -563,101 +563,101 @@
 							return this.target.clone().sub(this.center);
 					}
 				},
-				
+
 				getSteerForce: function () {
 					return this.getDirection()
 						.setLength(this.maxSpeed)
 						.sub(this.velocity);
 				},
-				
+
 				onAfterUpdate: function () {
 					if (this.state === 'up' && this.center.y >= this.enoughHeight)
 						this.state = 'front';
 					if (this.state === 'front' && this.center.clone().sub(this.target).setY(0).length() < this.enoughClosed)
 						this.state = 'down';
 				},
-				
+
 			});
 		:javascript
 			function AntiBallisticMissile(geometry, material) {
-			
+
 				Missile.call(this, geometry, material);
-				
+
 				this.predictTime = 3;
 				this.targetMissile = null;
-				
+
 				this.lastPositions = [];
 				this.maxRotationRadius = 1500;
 				this.maxRotationAngle = Math.PI / 4;
 				this.maxRotationSpeed = Math.PI / 4;
-				
+
 				this.enableRolling = true;
 			}
 			AntiBallisticMissile.prototype = Object.assign(Object.create(Missile.prototype), {
-				
+
 				constructor: AntiBallisticMissile,
-				
+
 				onBeforeUpdate: function () {
-					
+
 					this.target.copy(this.targetMissile.position.clone()
 						.addScaledVector(this.targetMissile.velocity, this.predictTime));
-					
+
 					this.lastPositions.unshift(this.position.clone());
 					if (this.lastPositions.length > 3)
 						this.lastPositions.length = 3;
 				},
-				
+
 				onAfterUpdate: function (delta) {
-					
+
 					if (this.lastPositions.length < 3)
 						return;
-					
+
 					var p0 = this.lastPositions[0];
 					var p1 = this.lastPositions[1];
 					var p2 = this.lastPositions[2];
-					
+
 					var q0 = p0.clone().add(p1).divideScalar(2);
 					var q1 = p1.clone().add(p2).divideScalar(2);
-					
+
 					var p2p1 = p1.clone().sub(p2);
 					var p1p0 = p0.clone().sub(p1);
-					
+
 					var n = p1p0.clone().cross(p2p1).normalize();
-					
+
 					var v0 = n.clone().cross(p1p0);
 					var v1 = n.clone().cross(p2p1);
-					
+
 					var s = -p1p0.dot(q1.clone().sub(q0)) / p1p0.dot(v1);
 					var c = q1.clone().addScaledVector(v1, s);
 					var r = c.clone().sub(p0).length();
-					
+
 					var rotationRadius = Math.min(this.maxRotationRadius, r);
 					var rotationAngle = this.enableRolling ? (1 - rotationRadius / this.maxRotationRadius) * this.maxRotationAngle : 0;
-					
+
 					var rotationDeltaFull = rotationAngle - this.rotation.z;
 					var rotationDeltaPart = this.maxRotationSpeed * delta * Math.sign(rotationDeltaFull);
 					var rotationDelta = Math.abs(rotationDeltaFull) < Math.abs(rotationDeltaPart) ? rotationDeltaFull : rotationDeltaPart;
 					this.rotation.z += rotationDelta;
 				},
-				
+
 			});
 		:javascript
 			function TetragonalPrismGeometry(width, height, depthTop, depthBottom) {
-			
+
 				THREE.Geometry.call(this);
-				
+
 				this.type = 'TetragonalPrismGeometry';
-				
+
 				this.parameters = {
 					width: width,
 					height: height,
 					depthTop: depthTop,
 					depthBottom: depthBottom,
 				};
-				
+
 				var halfWidth = width / 2;
 				var halfDepthTop = depthTop / 2;
-				
+
 				this.vertices.push(
 					new THREE.Vector3(0, height, -halfDepthTop),
 					new THREE.Vector3(0, height, halfDepthTop),
@@ -665,7 +665,7 @@
 					new THREE.Vector3(halfWidth, 0, -halfDepthTop),
 					new THREE.Vector3(-halfWidth, 0, depthBottom - halfDepthTop),
 					new THREE.Vector3(halfWidth, 0, depthBottom - halfDepthTop));
-				
+
 				this.faces.push(
 					new THREE.Face3(0, 3, 2),
 					new THREE.Face3(0, 2, 1),
@@ -675,7 +675,7 @@
 					new THREE.Face3(2, 3, 4),
 					new THREE.Face3(5, 4, 3),
 					new THREE.Face3(1, 4, 5));
-				
+
 				// TODO
 				this.faceVertexUvs[0].push(
 					[new THREE.Vector2(1, 1), new THREE.Vector2(0, 0), new THREE.Vector2(1, 0)],
@@ -686,35 +686,35 @@
 					[new THREE.Vector2(1, 1), new THREE.Vector2(0, 0), new THREE.Vector2(1, 0)],
 					[new THREE.Vector2(1, 1), new THREE.Vector2(0, 0), new THREE.Vector2(1, 0)],
 					[new THREE.Vector2(1, 1), new THREE.Vector2(0, 0), new THREE.Vector2(1, 0)]);
-				
+
 				this.computeFaceNormals();
 			}
 			TetragonalPrismGeometry.prototype = Object.create(THREE.Geometry.prototype);
 			TetragonalPrismGeometry.prototype.constructor = TetragonalPrismGeometry;
 		:javascript
 			function AntiBallisticMissileGeometry(width, height, depth) {
-				
+
 				THREE.Geometry.call(this);
-				
+
 				this.type = 'AntiBallisticMissileGeometry';
-				
+
 				this.parameters = {
 					width: width,
 					height: height,
 					depth: depth,
 				};
-				
+
 				var unitWidth = width / 5;
 				var unitHeight = height / 5;
 				var unitDepth = depth / 4;
-				
+
 				var body = new THREE.BoxGeometry(unitWidth, unitHeight, depth);
 				this.merge(body, new THREE.Matrix4().compose(
 					new THREE.Vector3(0, 0, 0),
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				), 0);
-				
+
 				var wing = new TetragonalPrismGeometry(unitHeight, unitWidth * 2, unitDepth, unitDepth);
 				this.merge(wing, new THREE.Matrix4().compose(
 					new THREE.Vector3(unitWidth * 0.5, 0, unitDepth * -0.25),
@@ -726,7 +726,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				), 0);
-				
+
 				var subWing = new TetragonalPrismGeometry(unitHeight, unitWidth, unitDepth / 2, unitDepth / 2);
 				this.merge(subWing, new THREE.Matrix4().compose(
 					new THREE.Vector3(unitWidth * 0.5, 0, unitDepth * -1.75),
@@ -738,7 +738,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				), 0);
-				
+
 				var tail = new TetragonalPrismGeometry(unitWidth, unitHeight * 3, unitDepth / 2, unitDepth);
 				this.merge(tail, new THREE.Matrix4().compose(
 					new THREE.Vector3(0, unitHeight * 0.5, unitDepth * -1.75),
@@ -755,7 +755,7 @@
 			var explosion, explosionables = [];
 			var abmCamera;
 			var radar;
-			
+
 			init();
 			animate();
 
@@ -764,7 +764,7 @@
 
 				camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
 				camera.position.set(0, 500, 500);
-				
+
 				abmCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
 
 				renderer = new THREE.WebGLRenderer();
@@ -773,42 +773,42 @@
 				renderer.setScissorTest(true);
 				renderer.autoClear = false;
 				document.body.appendChild(renderer.domElement);
-				
+
 				controls = new THREE.OrbitControls(camera, renderer.domElement);
 				window.addEventListener('resize', onWindowResize, false);
-				
+
 				var gridXZ = new THREE.GridHelper(400, 40, 0xff0000, 0xffffff);
 				scene.add(gridXZ);
-				
+
 				var target = new THREE.Vector3(300, 200, 300);
-				
+
 				// building
 				var building = createBuilding(50, target.y, 50);
 				building.position.copy(target.clone().setY(building.position.y));
 				scene.add(building);
 				explosionables.push(building);
-				
+
 				// balloons
 				var obstacles = [];
 				for (var i = 0; i < 10; i++) {
-					
+
 					var offset = new THREE.Vector3(
 						Math.random() * 200 - 100,
 						Math.random() * 100,
 						Math.random() * 200 - 100);
-					
+
 					var balloon = createBalloon(20, 40, 20);
 					balloon.position.copy(target).add(offset);
 					scene.add(balloon);
 					explosionables.push(balloon);
-					
-					
+
+
 					if (!balloon.geometry.boundingSphere)
 						balloon.geometry.computeBoundingSphere();
-					
+
 					obstacles.push(balloon.geometry.boundingSphere.clone().translate(balloon.position));
 				}
-				
+
 				// ballisticMissile
 				ballisticMissile = new BallisticMissile(
 					new BallisticMissileGeometry(10, 40, 2 / 3, 32),
@@ -816,7 +816,7 @@
 				ballisticMissile.position.z = 5;
 				ballisticMissile.target.copy(target);
 				ballisticMissile.obstacles = obstacles;
-				
+
 				// Launcher
 				var launcher = createLauncher();
 				launcher.position.set(-300, 0, -300);
@@ -824,11 +824,11 @@
 				launcher.pitch = Math.PI * -0.25;
 				launcher.yaw = Math.PI * 1.75;
 				scene.add(launcher);
-				
+
 				// explosion
 				explosion = createExplosion(60);
 				scene.add(explosion);
-				
+
 				// antiBallisticMissile
 				antiBallisticMissile = createAntiBallisticMissile(50, 30, 35);
 				antiBallisticMissile.position.set(-300, 0, 300);
@@ -839,19 +839,19 @@
 				antiBallisticMissile.update(0);
 				scene.add(antiBallisticMissile);
 				explosionables.push(antiBallisticMissile);
-				
+
 				// radar
 				radar = createRadar(300);
-				
+
 				// gui
 				var gui = new dat.GUI();
-				
+
 				var folderBM = gui.addFolder('Ballistic Missile');
 				folderBM.add(window, 'launchBallisticMissile').name('Launch');
 				folderBM.add(launcher, 'pitch', Math.PI * 5 / -6, Math.PI * 1 / -6).name('Pitch');
 				folderBM.add(launcher, 'yaw', 0, Math.PI * 2).name('Yaw');
 				folderBM.open();
-				
+
 				var folderDetailBM = folderBM.addFolder('BM Detail');
 				folderDetailBM.add(ballisticMissile, 'state', ['up', 'front', 'down']).listen();
 				folderDetailBM.add(ballisticMissile, 'enoughHeight', 0, 400);
@@ -859,33 +859,33 @@
 				folderDetailBM.add(ballisticMissile, 'maxForce', 0, 200);
 				folderDetailBM.add(ballisticMissile, 'maxSpeed', 0, 200);
 				folderDetailBM.add(ballisticMissile, 'maxAvoidForce', 0, 200);
-				
+
 				var folderABM = gui.addFolder('Anti Ballistic Missile');
 				folderABM.add(window, 'launchAntiBallisticMissile').name('Launch');
 				folderABM.add(antiBallisticMissile, 'enableRolling').name('Rolling');
 				folderABM.open();
-				
+
 				var folderDetailABM = folderABM.addFolder('ABM Detail');
 				folderDetailABM.add(antiBallisticMissile, 'predictTime', 0.5, 5);
 				folderDetailABM.add(antiBallisticMissile, 'maxForce', 0, 200);
 				folderDetailABM.add(antiBallisticMissile, 'maxSpeed', 0, 200);
 				folderDetailABM.add(antiBallisticMissile, 'maxAvoidForce', 0, 200);
 			}
-			
+
 			function createRadar(radius) {
-				
+
 				var radar = {};
-				
+
 				var rtScene = radar.rtScene = new THREE.Scene();
 				var rtCamera = radar.rtCamera = new THREE.OrthographicCamera(-radius, radius, radius, -radius, 1, 1000);
 				rtCamera.rotation.x = Math.PI * -0.5;
-				
+
 				var circles = [];
-				
+
 				for (var i = 0; i < explosionables.length; i++) {
-					
+
 					var explosionable = explosionables[i];
-					
+
 					var circle = new THREE.Mesh(
 						new THREE.CircleGeometry(10, 32),
 						new THREE.MeshBasicMaterial({
@@ -894,22 +894,22 @@
 							color: (i === 0) ? 'red' : (i === explosionables.length - 1) ? 'yellow' : 'white',
 						}));
 					circle.rotation.x = Math.PI * -0.5;
-					
+
 					rtScene.add(circle);
 					circles.push(circle);
 				}
-				
+
 				var renderTarget = radar.renderTarget = new THREE.WebGLRenderTarget(radius * 2, radius * 2);
 				var radarScene = radar.scene = new THREE.Scene();
 				var radarCamera = radar.camera = rtCamera.clone();
 				radarCamera.position.y = 100;
-				
+
 				var background = radar.background = new THREE.Color();
-				
+
 				var radarCircle = new THREE.Mesh(
 					new THREE.CircleGeometry(radius, 32),
 					new THREE.ShaderMaterial({
-						uniforms: { 
+						uniforms: {
 							texture: {
 								value: renderTarget.texture,
 							},
@@ -931,75 +931,75 @@
 					}));
 				radarCircle.rotation.x = Math.PI * -0.5;
 				radarScene.add(radarCircle);
-				
+
 				radar.update = function (delta) {
-					
+
 					rtCamera.position.copy(ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 0))).setY(800);
-					
+
 					radarCircle.material.uniforms.angle.value += delta * Math.PI * 0.5;
 					radarCircle.material.uniforms.angle.value %= Math.PI * 2;
 					var radarAngle = radarCircle.material.uniforms.angle.value;
-					
+
 					for (var i = 0; i < explosionables.length; i++) {
-						
+
 						if (explosionables[i].exploded)
 							circles[i].visible = false;
-							
+
 						circles[i].material.opacity = THREE.Math.clamp(circles[i].material.opacity - delta * 0.3, 0, 1);
-						
+
 						var offset = explosionables[i].position.clone().sub(rtCamera.position).setY(0);
 						var circleAngle = (Math.atan2(-offset.z, offset.x) + Math.PI * 2) % (Math.PI * 2);
-						
+
 						if (offset.length() < radius && Math.abs(radarAngle - circleAngle) < Math.PI / 36) {
 							circles[i].material.opacity = 1;
-							
+
 							if (circles[i].visible)
 								circles[i].position.copy(explosionables[i].position);
 						}
 					}
-					
+
 				};
-				
+
 				return radar;
 			}
-			
+
 			function createLauncher() {
-				
+
 				var launcher = new THREE.Object3D();
-				
+
 				var base = new THREE.Mesh(
 					new THREE.CylinderGeometry(45, 50, 10, 32),
 					new THREE.MeshNormalMaterial());
 				base.position.y = 5;
 				launcher.add(base);
-				
+
 				var yaw = new THREE.Mesh(
 					new THREE.CylinderGeometry(30, 35, 10, 32),
 					new THREE.MeshNormalMaterial());
 				yaw.position.y = 5 + 5;
 				base.add(yaw);
-				
+
 				var post1 = new THREE.Mesh(
 					new THREE.CylinderGeometry(5, 5, 60, 32),
 					new THREE.MeshNormalMaterial());
 				post1.position.set(0, 20, 20);
 				yaw.add(post1);
-				
+
 				var post2 = new THREE.Mesh(
 					new THREE.CylinderGeometry(5, 5, 60, 32),
 					new THREE.MeshNormalMaterial());
 				post2.position.set(0, 20, -20);
 				yaw.add(post2);
-				
+
 				var pitch = new THREE.Mesh(
 					new THREE.TorusGeometry(20, 5, 16, 32),
 					new THREE.MeshNormalMaterial());
 				pitch.rotation.set(0, Math.PI * 0.5, 0, 'YXZ');
 				pitch.position.y = 20 + 30;
 				yaw.add(pitch);
-				
+
 				Object.defineProperties(launcher, {
-					
+
 					pitch: {
 						get: function () {
 							return pitch.rotation.x;
@@ -1008,7 +1008,7 @@
 							pitch.rotation.x = value;
 						},
 					},
-					
+
 					yaw: {
 						get: function () {
 							return yaw.rotation.y;
@@ -1018,173 +1018,173 @@
 						},
 					},
 				});
-				
+
 				launcher.setBallisticMissile = function (ballisticMissile) {
 					pitch.add(ballisticMissile);
 				};
-				
+
 				return launcher;
 			}
-			
+
 			function createBuilding(width, height, depth) {
-			
+
 				var building = new THREE.Mesh(
 					new THREE.BoxGeometry(width, height, depth),
 					new THREE.MeshNormalMaterial())
 				building.position.y = height / 2;
-				
+
 				building.explode = function () {
 					this.exploded = true;
 					this.material.transparent = true;
 				};
-				
+
 				building.explodedUpdate = function (delta) {
 					if (this.exploded && this.material.opacity > 0) {
 						this.position.y -= delta * (height / 10);
 						this.material.opacity = Math.max(0, this.material.opacity - delta / 2);
 					}
 				};
-				
+
 				return building;
 			}
-			
+
 			function createBalloon(width, height, depth) {
-				
+
 				var balloon = new THREE.Mesh(
 					new THREE.BoxGeometry(width, height, depth),
 					new THREE.MeshNormalMaterial());
-					
+
 				balloon.explode = function () {
 					this.exploded = true;
 					this.material.transparent = true;
 				};
-				
+
 				balloon.explodedUpdate = function (delta) {
 					if (this.exploded && this.material.opacity > 0) {
 						this.position.y -= delta * (height / 2);
 						this.material.opacity = Math.max(0, this.material.opacity - delta / 3);
 					}
 				};
-				
+
 				return balloon;
 			}
-			
+
 			function createExplosion(radius) {
-				
+
 				var explosion = new THREE.Mesh(
-					new THREE.IcosahedronGeometry(radius, 4), 
+					new THREE.IcosahedronGeometry(radius, 4),
 					new THREE.ShaderMaterial({
-						uniforms: { 
+						uniforms: {
 							tExplosion: {
-								value: new THREE.TextureLoader().load('../src/images/explosion.png'),
+								value: new THREE.TextureLoader().load('../res/images/explosion.png'),
 							},
 							time: {
-								value: 0.0 
+								value: 0.0
 							},
 						},
 						vertexShader: document.getElementById('explosion_vertex_shader').textContent,
 						fragmentShader: document.getElementById('explosion_fragment_shader').textContent,
 					}));
-				
+
 				var scale = 0;
 				var direction = 1;
-				
+
 				var speed = function () {
 					return direction > 0 ? 1 : 0.2;
 				};
-				
+
 				explosion.show = function () {
 					scale = 0.01;
 					this.scale.set(scale, scale, scale);
 				};
-				
+
 				explosion.update = function (delta) {
-					
+
 					this.visible = (scale !== 0);
-					
+
 					if (scale === 0)
 						return;
-					
+
 					this.material.uniforms.time.value += 0.25 * delta;
-					
+
 					scale += direction * delta * speed();
 					scale = THREE.Math.clamp(scale, 0, 1);
-					
+
 					if ((direction > 0 && scale === 1) || (direction < 0 && scale === 0))
 						direction *= -1;
-					
+
 					if (scale > 0)
 						this.scale.set(scale, scale, scale);
 				};
-				
+
 				return explosion;
 			}
-			
+
 			function createAntiBallisticMissile(width, height, depth) {
-				
+
 				var antiBallisticMissile = new AntiBallisticMissile(
 					new AntiBallisticMissileGeometry(width, height, depth),
 					new THREE.MeshNormalMaterial());
-					
+
 				antiBallisticMissile.explode = function () {
 					this.exploded = true;
 					this.material.transparent = true;
 				};
-				
+
 				antiBallisticMissile.explodedUpdate = function (delta) {
 					if (this.exploded && this.material.opacity > 0) {
 						this.position.y -= delta * (height / 10);
 						this.material.opacity = Math.max(0, this.material.opacity - delta / 2);
 					}
 				};
-				
+
 				return antiBallisticMissile;
 			}
-			
+
 			function launchBallisticMissile() {
-				
+
 				var front = ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 1));
 				var origin = ballisticMissile.localToWorld(new THREE.Vector3(0, 0, 0));
-				
+
 				ballisticMissile.velocity.subVectors(front, origin).setLength(50);
 				ballisticMissile.parent.localToWorld(ballisticMissile.position);
-				
+
 				scene.add(ballisticMissile);
-				
+
 				ballisticMissile.enable = true;
 			}
-			
+
 			function launchAntiBallisticMissile() {
 				antiBallisticMissile.enable = true;
 			}
-			
+
 			function checkCollision() {
-				
+
 				var obb = new OBB(ballisticMissile);
-				
+
 				for (var i = 0; i < explosionables.length; i++) {
-				
+
 					var explosionable = explosionables[i];
-					
+
 					if (!explosionable.exploded) {
-						
+
 						var explosionablesOBB = new OBB(explosionable);
 						if (obb.intersectsOBB(explosionablesOBB)) {
-							
+
 							ballisticMissile.exploded = true;
 							ballisticMissile.visible = false;
-							
+
 							explosion.position.copy(ballisticMissile.position);
 							explosion.show();
-							
+
 							explosionable.explode();
-							
+
 							return;
 						}
 					}
 				}
 			}
-			
+
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
@@ -1192,65 +1192,65 @@
 			}
 
 			function animate() {
-				
+
 				var delta = clock.getDelta();
-				
+
 				if (ballisticMissile.enable)
 					ballisticMissile.update(delta);
-				
+
 				if (antiBallisticMissile.enable)
 					antiBallisticMissile.update(delta);
-				
+
 				if (!ballisticMissile.exploded)
 					checkCollision();
-				
+
 				for (var i = 0; i < explosionables.length; i++)
 					explosionables[i].explodedUpdate(delta);
 				explosion.update(delta);
-				
+
 				controls.update();
 				requestAnimationFrame(animate);
 				render(delta);
 			}
-			
+
 			function render(delta) {
-				
+
 				renderer.clear();
-				
+
 				renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
 				renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
 				renderer.render(scene, camera, null, true);
-				
+
 				if (!ballisticMissile.exploded) {
-					
+
 					var radarWidth = 0.3 * (window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight);
 					var radarHeight = radarWidth;
-					
+
 					radar.update(delta);
-					
+
 					radar.background.copy(renderer.getClearColor());
 					renderer.render(radar.rtScene, radar.rtCamera, radar.renderTarget, true);
-					
+
 					renderer.setViewport(0, window.innerHeight - radarHeight, radarWidth, radarHeight);
 					renderer.setScissor(0, window.innerHeight - radarHeight, radarWidth, radarHeight);
 					renderer.render(radar.scene, radar.camera);
 				}
-				
+
 				if (antiBallisticMissile.enable && antiBallisticMissile.material.opacity > 0 && !ballisticMissile.exploded) {
-					
+
 					var abmWidth = 0.3 * (window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight);
 					var abmHeight = abmWidth;
-					
+
 					$('.border.abmCamera')
 						.css('width', abmWidth + 'px')
 						.css('height', abmHeight + 'px')
 						.show();
-					
+
 					abmCamera.position.copy(antiBallisticMissile.center)
 						.addScaledVector(antiBallisticMissile.axisFront, -50)
 						.addScaledVector(antiBallisticMissile.localToWorld(new THREE.Vector3(0, 1, 0)).sub(antiBallisticMissile.position), 50);
 					abmCamera.lookAt(antiBallisticMissile.center);
-					
+
 					renderer.setViewport(window.innerWidth - abmWidth, 0, abmWidth, abmHeight);
 					renderer.setScissor(window.innerWidth - abmWidth, 0, abmWidth, abmHeight);
 					renderer.render(scene, abmCamera, null, true);

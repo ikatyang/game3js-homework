@@ -3,10 +3,10 @@
 	%head
 		%meta(charset='utf-8')
 		%title='Game3js Homework1'
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.min.js')
-		%script(src='../src/OrbitControls.js')
-		%script(src='../src/KeyboardState.js')
+		%script(src='../res/libraries/jquery.min.js')
+		%script(src='../res/libraries/three.r76.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
+		%script(src='../res/libraries/KeyboardState.js')
 		:css
 			.top {
 				position: absolute;
@@ -16,7 +16,7 @@
 				text-align: center;
 				color: yellow;
 			}
-			
+
 			.bottom {
 				position: absolute;
 				bottom: 1em;
@@ -26,7 +26,7 @@
 				background: white;
 				text-align: center;
 			}
-			
+
 			.progressBar, .progressInfo {
 				position: absolute;
 				top: 0;
@@ -35,7 +35,7 @@
 				height: 100%;
 				text-align: center;
 			}
-			
+
 			.progressBar {
 				width: 0;
 			}
@@ -70,29 +70,29 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				renderer.setClearColor(0x888888);
 				document.body.appendChild(renderer.domElement);
-				
+
 				controls = new THREE.OrbitControls(camera, renderer.domElement);
 				controls.enableKeys = false;
-				
+
 				keyboardState = new KeyboardState();
-				
+
 				var gridXZ = new THREE.GridHelper(100, 10);
 				gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
 				scene.add(gridXZ);
-				
+
 				var light = new THREE.HemisphereLight( 0xffffff, 0x000000, 3);
 				scene.add(light);
-				
+
 				power = 10;
 				velocity = new THREE.Vector3(0, 0, 0);
-				
+
 				$('.info').text('loading ... ');
 				var loadingTime = 0;
 				var loadingMessage = setInterval(function () {
 					$('.info').text('loading ... ' + (++loadingTime) + 's');
 				}, 1000);
 				var loader = new THREE.ObjectLoader();
-				loader.load('../src/models/R2D2/r2-d2.json', function (object) {
+				loader.load('../res/models/R2D2/r2-d2.json', function (object) {
 					object.scale.set(0.1, 0.1, 0.1);
 					scene.add(object);
 					clearInterval(loadingMessage);
@@ -114,13 +114,13 @@
 					if (!clock)
 						clock = new THREE.Clock();
 					var delta = clock.getDelta();
-					
+
 					var theta = 0;
 					if (keyboardState.pressed('left'))
 						theta = 0.5;
 					if (keyboardState.pressed('right'))
 						theta = -0.5;
-					
+
 					var frontDirection = new THREE.Vector3(0, 0, -1);
 					var force = (!powerOn || keyboardState.pressed('space')) ? new THREE.Vector3(0, 0, 0) :
 						frontDirection.clone().multiplyScalar(power).applyAxisAngle(new THREE.Vector3(0, 1, 0), r2d2.rotation.y + theta);
@@ -128,7 +128,7 @@
 					velocity.add(force.clone().multiplyScalar(delta / mass));
 					r2d2.position.add(velocity.clone().multiplyScalar(delta));
 					r2d2.rotation.y = (velocity.angleTo(frontDirection) || 0) * Math.sign(frontDirection.clone().cross(velocity).y);
-					
+
 					if (keyboardState.pressed('up'))
 						power += 0.5;
 					if (keyboardState.pressed('down'))

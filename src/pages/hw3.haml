@@ -3,10 +3,10 @@
 	%head
 		%meta(charset='utf-8')
 		%title='Game3js Homework3'
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.js')
-		%script(src='../src/OrbitControls.js')
-		%script(src='../src/KeyboardState.js')
+		%script(src='../res/libraries/jquery.min.js')
+		%script(src='../res/libraries/three.r76.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
+		%script(src='../res/libraries/KeyboardState.js')
 		:css
 			.top, .bottom {
 				position: absolute;
@@ -14,25 +14,25 @@
 				padding: 10px;
 				text-align: center;
 			}
-			
+
 			.top {
 				top: 1em;
 				color: yellow;
 			}
-			
+
 			.bottom {
 				bottom: 1em;
 				color: blue;
 			}
-			
+
 			.done em {
 				color: red;
 			}
-			
+
 			.start a, .done a {
 				color: gray;
 			}
-			
+
 			.start .background, .done .background {
 				position: absolute;
 				top: 0;
@@ -42,7 +42,7 @@
 				background: black;
 				opacity: 0.5;
 			}
-			
+
 			.start .message, .done .message {
 				position: absolute;
 				top: 30%;
@@ -53,7 +53,7 @@
 				color: white;
 				text-align: center;
 			}
-			
+
 			body {
 				margin: 0;
 				overflow: hidden;
@@ -72,8 +72,8 @@
 		.done(style='display: none;')
 			.background
 			.message
-		%audio(src='../src/audios/bgm_jx3_xz.mp3' autoplay loop)
-		%audio#ding(src='../src/audios/ding.mp3')
+		%audio(src='../res/audios/bgm_jx3_xz.mp3' autoplay loop)
+		%audio#ding(src='../res/audios/ding.mp3')
 		:javascript
 			var scene, camera, renderer;
 			var clock = new THREE.Clock();
@@ -87,7 +87,7 @@
 			var spriteUvs, spriteUvsIndex = 0, spriteSegments = 10, spriteLength = 0, spriteLengthDelta = 1;
 			var coinRadius = 2, coinCount = 50, coins = [], point = 0;
 			var animated = false;
-			
+
 			init();
 			animate();
 
@@ -101,11 +101,11 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				renderer.setClearColor(0x888888);
 				document.body.appendChild(renderer.domElement);
-				
+
 				spriteUvs = createFaceVertexUvs(spriteSegments);
-				
+
 				var loader = new THREE.TextureLoader();
-				loader.load('../src/images/spriteAnimation.png', function (texture) {
+				loader.load('../res/images/spriteAnimation.png', function (texture) {
 					player = new THREE.Mesh(
 						new THREE.PlaneGeometry(spriteWidth, spriteHeight),
 						new THREE.MeshBasicMaterial({
@@ -118,7 +118,7 @@
 					player.position.set(-20, 40, 0);
 					scene.add(player);
 				});
-				loader.load('../src/images/goldCoin.png', function (texture) {
+				loader.load('../res/images/goldCoin.png', function (texture) {
 					for (var i = 0; i < coinCount; i++) {
 						var coinPosition = new THREE.Vector3(0, 0, 0);
 						coinPosition.x = Math.random() * 500;
@@ -134,23 +134,23 @@
 						coins.push(coin);
 					}
 				});
-				
+
 				ground = new THREE.Mesh(
 					createGroundGeometry(sceneLeft, sceneRight, xStep),
 					new THREE.MeshBasicMaterial({ color: 'green' }));
 				scene.add(ground);
-				
+
 				velocity = new THREE.Vector3(0, 0, 0);
 				gravity = new THREE.Vector3(0, -98, 0)
-				
+
 				window.addEventListener('resize', onWindowResize, false);
 			}
-			
+
 			function start() {
 				$('.start').fadeOut();
 				animated = true;
 			}
-			
+
 			function getGroundHeight(x) {
 				if (x < 50)
 					return 0;
@@ -171,7 +171,7 @@
 				else
 					return -5;
 			}
-			
+
 			function spriteAnimationUpdate() {
 				for (var i = 0; i < player.geometry.faceVertexUvs[0].length; i++)
 					for (var j = 0; j < player.geometry.faceVertexUvs[0][i].length; j++)
@@ -179,7 +179,7 @@
 				player.geometry.uvsNeedUpdate = true;
 				spriteUvsIndex = (spriteUvsIndex + 1) % spriteSegments;
 			}
-			
+
 			function createFaceVertexUvs(widthSegments) {
 				var faceVertexUvs = [];
 				var uStep = 1 / widthSegments;
@@ -191,7 +191,7 @@
 				}
 				return faceVertexUvs;
 			}
-			
+
 			function createGroundGeometry(xMin, xMax, xStep) {
 				var geometry = new THREE.Geometry();
 				for (var x = xMin; x < xMax; x += xStep)
@@ -199,7 +199,7 @@
 				geometry.computeFaceNormals();
 				geometry.computeVertexNormals();
 				return geometry;
-				
+
 				function addVertices(geometry, xMin, xMax, yMin) {
 					var vertexIndex = geometry.vertices.length;
 					geometry.vertices.push(
@@ -220,24 +220,24 @@
 				camera.updateProjectionMatrix();
 				renderer.setSize(window.innerWidth, window.innerHeight);
 			}
-			
+
 			function updateCamera() {
 				if (player.position.y - camera.position.y < -cameraRange)
 					camera.position.y = player.position.y + cameraRange;
 				if (player.position.y - camera.position.y > cameraRange)
 					camera.position.y = player.position.y - cameraRange;
-					
+
 				if (player.position.x - camera.position.x < -cameraRange)
 					camera.position.x = player.position.x + cameraRange;
 				if (player.position.x - camera.position.x > cameraRange)
 					camera.position.x = player.position.x - cameraRange;
-					
+
 				if (camera.position.x < sceneLeft + 50)
 					camera.position.x = sceneLeft + 50;
 				if (camera.position.x > sceneRight - 50)
 					camera.position.x = sceneRight - 50;
 			}
-			
+
 			function checkIntersectPlaneAndCircle(r, rad) {
 				if (r.max.x < 0) { // left
 					if (r.max.y < 0) { // left-bottom
@@ -274,12 +274,12 @@
 				} else if (player) {
 					var delta = clock.getDelta();
 					var force = new THREE.Vector3(0, 0, 0);
-					
+
 					var groundHeight = getGroundHeight(player.position.x);
 					var xStep = 0.1;
 					var yPrev = getGroundHeight(player.position.x - xStep);
 					var yNext = getGroundHeight(player.position.x + xStep);
-					
+
 					force.add(gravity);
 					var groundNormal = new THREE.Vector3(yPrev - yNext, xStep * 2, 0).normalize();
 					var normalForce = gravity.clone().negate().projectOnVector(groundNormal);
@@ -288,19 +288,19 @@
 						velocity.y *= -0.2;
 						force.add(normalForce);
 					}
-					
+
 					if (player.position.x < sceneLeft + spriteWidth / 2 || player.position.x > sceneRight - spriteWidth / 2)
 						velocity.x *= -0.5;
 					if (player.position.x < sceneLeft + spriteWidth / 2)
 						player.position.x = sceneLeft + spriteWidth / 2;
-					
+
 					var nextGroundDelta = Math.sign(velocity.x) * spriteWidth / 2;
 					var nextGroundHeight = getGroundHeight(player.position.x + nextGroundDelta);
 					if (nextGroundHeight > player.position.y) {
 						player.position.x -= Math.sign(velocity.x) * xStep;
 						velocity.x *= -0.5;
 					}
-					
+
 					if (Math.abs(player.position.y - (spriteHeight / 2 + groundHeight)) < 0.1) {
 						if (keyboardState.down('up'))
 							velocity.add(new THREE.Vector3(0, 1, 0).setLength(70));
@@ -310,27 +310,27 @@
 							force.add(new THREE.Vector3(+1, 0, 0).projectOnPlane(groundNormal).setLength(50));
 						force.add(velocity.clone().multiplyScalar(-1.5).setY(0));
 					}
-					
+
 					velocity.add(force.clone().multiplyScalar(delta / mass));
-					
+
 					var positionDelta = velocity.clone().multiplyScalar(delta);
 					player.position.add(positionDelta);
 					player.rotation.y = (velocity.x < 0) ? 0 : Math.PI;
-					
+
 					spriteLength += Math.abs(positionDelta.x);
 					if (spriteLength > spriteLengthDelta) {
 						spriteLength -= spriteLengthDelta;
 						spriteAnimationUpdate();
 					}
-					
+
 					updateCamera();
-					
+
 					for (var i = 0; i < coins.length; i++) {
 						var coin = coins[i];
-						
+
 						if (!coin.visible)
 							continue;
-						
+
 						var origin = coin.worldToLocal(player.position.clone());
 						if (checkIntersectPlaneAndCircle({
 							min: {
@@ -347,14 +347,14 @@
 							var ding = document.getElementById('ding');
 							ding.currentTime = 0;
 							ding.play();
-						}	
+						}
 					}
-					
+
 					$('.point').text('point: ' + point);
-					
+
 					var gameoverTime = 120 - Math.floor(clock.getElapsedTime());
 					$('.timer').text(Math.floor(gameoverTime / 60) + ':' + (gameoverTime % 60 < 10 ? '0' : '') + (gameoverTime % 60));
-					
+
 					if (player.position.x > sceneRight - spriteWidth / 2 || gameoverTime <= 0) {
 						$('.done').fadeIn();
 						var time = Math.floor(clock.getElapsedTime());

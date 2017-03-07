@@ -6,10 +6,10 @@
 		%meta(charset='utf-8')
 		%meta(name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no')
 		%title='Game3js Homework'
-		%link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css')
-		%script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
-		%script(src='https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js')
+		%link(rel='stylesheet' href='res/libraries/jquery.mobile.min.css')
+		%script(src='res/libraries//jquery.min.js')
+		%script(src='res/libraries//jquery.mobile.min.js')
+		%script(src='res/libraries//jquery.lazyload.min.js')
 		:javascript
 			$.mobile.ajaxEnabled = false;
 			$(function () {
@@ -39,6 +39,6 @@
 				.ui-grid-b.ui-responsive
 					- homework_ids.each_with_index  do |homework_id, index|
 						.ui-block(class='ui-block-#{block_ids[index % block_ids.length]}')
-							%a.ui-btn.ui-corner-all(href='hw#{homework_id}/')='Homework' + homework_id
+							%a.ui-btn.ui-corner-all(href='pages/hw#{homework_id}.html')='Homework' + homework_id
 							.ui-body.ui-body-a.ui-corner-all
-								%img(data-original='hw#{homework_id}/demo.gif')
+								%img(data-original='res/demos/hw#{homework_id}.gif')

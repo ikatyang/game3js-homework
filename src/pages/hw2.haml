@@ -3,10 +3,10 @@
 	%head
 		%meta(charset='utf-8')
 		%title='Game3js Homework2'
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r76/three.min.js')
-		%script(src='../src/OrbitControls.js')
-		%script(src='../src/KeyboardState.js')
+		%script(src='../res/libraries/jquery.min.js')
+		%script(src='../res/libraries/three.r76.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
+		%script(src='../res/libraries/KeyboardState.js')
 		:css
 			.top, .bottom {
 				position: absolute;
@@ -14,17 +14,17 @@
 				padding: 10px;
 				text-align: center;
 			}
-			
+
 			.top {
 				top: 1em;
 				color: yellow;
 			}
-			
+
 			.bottom {
 				bottom: 1em;
 				color: blue;
 			}
-			
+
 			body {
 				margin: 0;
 				overflow: hidden;
@@ -57,15 +57,15 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				renderer.setClearColor(0x888888);
 				document.body.appendChild(renderer.domElement);
-				
+
 				player = new THREE.Mesh(
 					new THREE.CircleGeometry(playerRadius, 12),
 					new THREE.MeshBasicMaterial({ color: 'yellow', wireframe: true }));
 				player.position.set(-20, 40, 0);
 				scene.add(player);
-				
+
 				var loader = new THREE.TextureLoader();
-				loader.load('../src/images/repeatableBackground.jpg', function (texture) {
+				loader.load('../res/images/repeatableBackground.jpg', function (texture) {
 					texture.wrapS = THREE.RepeatWrapping;
 					texture.wrapT = THREE.RepeatWrapping;
 					texture.repeat.set(5, 1);
@@ -75,10 +75,10 @@
 					background.position.set(200, 21, -1);
 					scene.add(background);
 				});
-				
+
 				velocity = new THREE.Vector3(0, 0, 0);
 				gravity = new THREE.Vector3(0, -98, 0)
-				
+
 				window.addEventListener('resize', onWindowResize, false);
 			}
 
@@ -87,7 +87,7 @@
 				camera.updateProjectionMatrix();
 				renderer.setSize(window.innerWidth, window.innerHeight);
 			}
-			
+
 			function updateCamera() {
 				if (player.position.x - camera.position.x < -cameraRange)
 					camera.position.x = player.position.x + cameraRange;

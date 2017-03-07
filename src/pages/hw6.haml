@@ -3,11 +3,11 @@
 	%head
 		%meta(charset='utf-8')
 		%title='Game3js Homework6'
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js')
-		%script(src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r81/three.min.js')
-		%script(src='../src/OrbitControls.js')
-		%script(src='../src/CCDIKSolver.js')
+		%script(src='../res/libraries/dat.gui.min.js')
+		%script(src='../res/libraries/jquery.min.js')
+		%script(src='../res/libraries/three.r81.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
+		%script(src='../res/libraries/CCDIKSolver.js')
 		:css
 			body {
 				margin: 0;
@@ -27,16 +27,16 @@
 			var scene, camera, renderer, controls;
 			var clock = new THREE.Clock();
 			var character, ladder;
-			
+
 			var enableIK = true;
 			var showModel = true;
 			var showSkeleton = true;
 			var showSkeletonIK = false;
-			
+
 			var period = 2;
 			var option = 'walk';
 			var elapsedRatio = 0;
-			
+
 			var standParams = {
 				bodyShake: 0,
 				walkLength: 0,
@@ -57,7 +57,7 @@
 				transitionDirection: 0,
 			};
 			var defaultWalkParams = Object.assign({}, walkParams);
-			
+
 			var climbParams = {
 				bodyY: 45,
 				stairDepth: 20,
@@ -66,7 +66,7 @@
 				armRadiusY: 5,
 				armRadiusZ: 10,
 			};
-			
+
 			init();
 			animate();
 
@@ -80,73 +80,73 @@
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				renderer.setClearColor(0x888888);
 				document.body.appendChild(renderer.domElement);
-				
+
 				controls = new THREE.OrbitControls(camera, renderer.domElement);
 				window.addEventListener('resize', onWindowResize, false);
-				
+
 				var gridXZ = new THREE.GridHelper(200, 20, 0xff0000, 0xffffff);
 				scene.add(gridXZ);
-				
+
 				var light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
 				scene.add(light);
-				
+
 				character = createCharacter();
 				scene.add(character);
-				
+
 				var skeletonHelper = new THREE.SkeletonHelper(character);
 				scene.add(skeletonHelper);
-				
+
 				var ikHelper = new THREE.CCDIKHelper(character);
 				ikHelper.visible = false;
 				ikHelper.sphereGeometry.scale(8, 8, 8);
 				scene.add(ikHelper);
-				
+
 				character.ikHelper = ikHelper;
 				character.skeletonHelper = skeletonHelper;
-				
+
 				character.position.y = 60;
 				character.ikSolver = new THREE.CCDIKSolver(character);
-				
+
 				ladder = new THREE.Object3D();
 				ladder.stairs = [];
 				ladder.visible = false;
 				scene.add(ladder);
-				
+
 				var stairWidth = 60;
 				var stairDepth = climbParams.stairDepth;
-				
+
 				var stairGeometry = new THREE.PlaneGeometry(stairWidth, stairDepth);
 				var stairMaterial = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
-				
+
 				for (var i = 0; i < 200 / stairDepth; i++) {
-					
+
 					var stairZ = new THREE.Mesh(stairGeometry, stairMaterial);
 					stairZ.rotation.x = Math.PI * -0.5;
 					stairZ.position.set(0, stairDepth * i, 200 - stairDepth * (i + 0.5));
 					ladder.add(stairZ);
-					
+
 					ladder.stairs.push(stairZ);
-					
+
 					var stairY = stairZ.clone();
 					stairZ.rotation.x = 0;
 					stairZ.position.add(new THREE.Vector3(0, stairDepth * 0.5, stairDepth * -0.5));
 					ladder.add(stairY);
 				}
-				
+
 				var gFunctions = {
-					
+
 					standToWalk: function () {
 						walkParams.transitionRatio = 0;
 						walkParams.transitionDirection = 1;
 					},
-					
+
 					walkToStand: function () {
 						walkParams.transitionRatio = 0;
 						walkParams.transitionDirection = -1;
 					},
-					
+
 				};
-				
+
 				var gui = new dat.GUI();
 				gui.add(window, 'enableIK');
 				gui.add(window, 'showModel').onChange(function (value) {
@@ -167,23 +167,23 @@
 					else if (option === 'climbDown')
 						initClimbDown();
 				});
-				
+
 				var walk = gui.addFolder('Walk');
 				addWalkParams(walk, walkParams);
-				
+
 				walk.add(gFunctions, 'standToWalk');
 				walk.add(gFunctions, 'walkToStand');
 				walk.add(walkParams, 'transitionPeriod', 0.3, 30).name('transPeriod');
-				
+
 				var defaultWalk = walk.addFolder('Default');
 				addWalkParams(defaultWalk, defaultWalkParams);
-				
+
 				var climb = gui.addFolder('Climb');
 				climb.add(climbParams, 'bodyShake', 0, 10);
 				climb.add(climbParams, 'armY', -30, 30);
 				climb.add(climbParams, 'armRadiusY', 0, 30);
 				climb.add(climbParams, 'armRadiusZ', 0, 30);
-				
+
 				function addWalkParams(folder, walkParams) {
 					folder.add(walkParams, 'bodyShake', 0, 10).listen();
 					folder.add(walkParams, 'walkLength', 0, 50).listen();
@@ -193,50 +193,50 @@
 					folder.add(walkParams, 'armRadiusZ', 0, 30).listen();
 				}
 			}
-			
+
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize(window.innerWidth, window.innerHeight);
 			}
-			
+
 			function walkTransition(delta) {
-				
+
 				var targetParams = (walkParams.transitionDirection > 0) ? defaultWalkParams : standParams;
 				var ratioDelta = delta / walkParams.transitionPeriod;
-				
+
 				for (var key in standParams) {
-					
+
 					var value0 = walkParams[key];
 					var value1 = targetParams[key];
-					
+
 					var valueAbsDelta = (value1 - value0);
 					var valueDelta = valueAbsDelta / (1 - walkParams.transitionRatio) * ratioDelta;
-					
+
 					if (Math.abs(valueDelta) > Math.abs(valueAbsDelta))
 						valueDelta = valueAbsDelta;
-					
+
 					walkParams[key] += valueDelta;
 				}
-				
+
 				if ((walkParams.transitionRatio += ratioDelta) >= 1)
 					walkParams.transitionDirection = 0;
 			}
-			
+
 			function initWalk() {
 				elapsedRatio = 0;
 				ladder.visible = false;
 				character.rotation.y = 0;
 				character.position.set(0, walkParams.bodyY, -200);
 			}
-			
+
 			function initClimbUp() {
 				elapsedRatio = 0.5
 				ladder.visible = true;
 				character.rotation.y = Math.PI;
 				character.position.set(0, climbParams.bodyY + climbParams.stairDepth, climbParams.stairDepth * -0.5 + 200);
 			}
-			
+
 			function initClimbDown() {
 				elapsedRatio = 0.5
 				ladder.visible = true;
@@ -245,297 +245,297 @@
 			}
 
 			function animate() {
-			
+
 				var delta = clock.getDelta();
-				
+
 				elapsedRatio += delta / period;
-				
+
 				var elapsed = elapsedRatio * period;
-				
+
 				var halfPeriod = period / 2;
-				
+
 				var elapsed1 = elapsed;
 				var elapsed2 = elapsed + halfPeriod;
-				
+
 				var t0 = elapsed % halfPeriod;
 				var t1 = elapsed1 % period;
 				var t2 = elapsed2 % period;
-				
+
 				if (option === 'walk') {
-				
+
 					if (walkParams.transitionDirection !== 0)
 						walkTransition(delta);
-				
+
 					character.position.z += delta * walkParams.walkLength / halfPeriod;
 					if (character.position.z > 200)
 						initWalk();
-				
+
 				} else if (option === 'climbUp') {
-					
+
 					character.position.addScaledVector(
 						new THREE.Vector3(0, 1, -1).normalize(),
 						delta * (climbParams.stairDepth * Math.sqrt(2)) / halfPeriod);
-					
+
 					if (character.position.z < 0)
 						initClimbUp();
-						
+
 				} else if (option === 'climbDown') {
-					
+
 					character.position.addScaledVector(
 						new THREE.Vector3(0, -1, 1).normalize(),
 						delta * (climbParams.stairDepth * Math.sqrt(2)) / halfPeriod);
-					
+
 					if (character.position.z > 200)
 						initClimbDown();
 				}
-				
+
 				updateBodyShake(t0 / halfPeriod);
-			
+
 				updateLegTarget(character.leftLegTarget, t2 / period);
 				updateLegTarget(character.rightLegTarget, t1 / period);
-				
+
 				updateArmTarget(character.leftArmTarget, t1 / period);
 				updateArmTarget(character.rightArmTarget, t2 / period);
-				
+
 				if (enableIK)
 					character.ikSolver.update();
-				
+
 				if (character.skeletonHelper.visible)
 					character.skeletonHelper.update();
-					
+
 				if (character.ikHelper.visible)
 					character.ikHelper.update();
-				
+
 				controls.update();
 				requestAnimationFrame(animate);
 				renderer.render(scene, camera);
 			}
-			
+
 			function updateBodyShake(tRatio) {
 				var shake = (option === 'walk' ? walkParams : climbParams).bodyShake;
 				character.skeleton.bones[0].position.y = -shake + Math.sin(tRatio * Math.PI) * shake;
 			}
-			
+
 			function updateArmTarget(armTarget, tRatio) {
-				
+
 				var params = (option === 'walk') ? walkParams : climbParams;
-				
+
 				var originY = params.armY + character.skeleton.bones[0].position.y;
 				var radiusY = params.armRadiusY;
 				var radiusZ = params.armRadiusZ;
-				
+
 				var ratio = (tRatio < 0.5) ?
 					tRatio * 2 :
 					1 - (tRatio - 0.5) * 2;
-				
+
 				var angle = (ratio * 2 - 1) * (Math.PI / 2);
-				
+
 				armTarget.position.y = originY - radiusY * Math.cos(angle);
 				armTarget.position.z = radiusZ * Math.sin(angle);
 			}
-			
+
 			function updateLegTarget(legTarget, tRatio) {
-				
+
 				var originY = (option === 'walk' ? walkParams : climbParams).bodyY;
-				
+
 				var length = (option === 'walk') ? walkParams.walkLength : climbParams.stairDepth;
 				var height = (option === 'walk') ? walkParams.walkHeight : climbParams.stairDepth;
-				
+
 				if (tRatio < 0.5) {
-					
+
 					var ratio = tRatio * 2;
-					
+
 					legTarget.position.y = -originY + height * Math.abs(Math.sin(ratio * Math.PI));
 					legTarget.position.z = (ratio - 0.5) * length;
 				} else {
-				
+
 					var ratio = 1 - (tRatio - 0.5) * 2;
-					
+
 					legTarget.position.y = -originY;
 					legTarget.position.z = (ratio - 0.5) * length;
 				}
-				
+
 				if (option === 'climbUp')
 					legTarget.position.y -= (1 - ratio) * height;
 				else if (option === 'climbDown')
 					legTarget.position.y -= ratio * height;
 			}
-			
+
 			function createCharacter() {
-			
+
 				var geometry = new THREE.Geometry();
 				var material = new THREE.MeshPhongMaterial({ skinning: true, color: 0xff1234 });
-				
+
 				var character = new THREE.SkinnedMesh(geometry, material);
 				initCharacter(character);
-				
+
 				return character;
 			}
-			
+
 			function initCharacter(character) {
-				
+
 				var bodyWidth = 30;
 				var bodyHeight = 40;
 				var bodyDepth = 20;
-				
+
 				var thighGap = bodyWidth * 0.5;
 				var thighRadius = 6;
 				var thighLength = 30;
-				
+
 				var calfRadius = 4;
 				var calfLength = 30;
-				
+
 				var upperarmRadius = 4;
 				var upperarmLength = 20;
-				
+
 				var forearmRadius = 3;
 				var forearmLength = 20;
-				
+
 				var bones = [];
 				var iks = character.geometry.iks = [];
-				
+
 				var root = new THREE.Bone();
 				root.name = 'Root';
 				bones.push(root);
-				
+
 					var sacrum = new THREE.Bone();
 					sacrum.name = 'Sacrum';
 					root.add(sacrum);
 					bones.push(sacrum);
-					
+
 						var leftHip = new THREE.Bone();
 						leftHip.name = 'LeftHip';
 						leftHip.position.x = thighGap * 0.5;
 						sacrum.add(leftHip);
 						bones.push(leftHip);
-					
+
 						var rightHip = new THREE.Bone();
 						rightHip.name = 'RightHip';
 						rightHip.position.x = thighGap * -0.5;
 						sacrum.add(rightHip);
 						bones.push(rightHip);
-						
+
 							var leftFemur = new THREE.Bone();
 							leftFemur.name = 'LeftFemur';
 							leftFemur.position.y = thighLength * -1;
 							leftHip.add(leftFemur);
 							bones.push(leftFemur);
-						
+
 							var rightFemur = new THREE.Bone();
 							rightFemur.name = 'RightFemur';
 							rightFemur.position.y = thighLength * -1;
 							rightHip.add(rightFemur);
 							bones.push(rightFemur);
-							
+
 								var leftTibia = new THREE.Bone();
 								leftTibia.name = 'LeftTibia';
 								leftTibia.position.y = calfLength * -1;
 								leftFemur.add(leftTibia);
 								bones.push(leftTibia);
-							
+
 								var rightTibia = new THREE.Bone();
 								rightTibia.name = 'RightTibia';
 								rightTibia.position.y = calfLength * -1;
 								rightFemur.add(rightTibia);
 								bones.push(rightTibia);
-					
+
 					var manubrium = new THREE.Bone();
 					manubrium.name = 'Manubrium';
 					manubrium.position.y = bodyHeight - upperarmRadius;
 					sacrum.add(manubrium);
 					bones.push(manubrium);
-					
+
 						var leftClavicle = new THREE.Bone();
 						leftClavicle.name = 'LeftClavicle';
 						leftClavicle.position.x = bodyWidth * 0.5;
 						manubrium.add(leftClavicle);
 						bones.push(leftClavicle);
-					
+
 						var rightClavicle = new THREE.Bone();
 						rightClavicle.name = 'RightClavicle';
 						rightClavicle.position.x = bodyWidth * -0.5;
 						manubrium.add(rightClavicle);
 						bones.push(rightClavicle);
-						
+
 							var leftHumerus = new THREE.Bone();
 							leftHumerus.name = 'LeftHumerus';
 							leftHumerus.position.y = upperarmLength * -1;
 							leftClavicle.add(leftHumerus);
 							bones.push(leftHumerus);
-						
+
 							var rightHumerus = new THREE.Bone();
 							rightHumerus.name = 'RightHumerus';
 							rightHumerus.position.y = upperarmLength * -1;
 							rightClavicle.add(rightHumerus);
 							bones.push(rightHumerus);
-							
+
 								var leftUlna = new THREE.Bone();
 								leftUlna.name = 'LeftUlna';
 								leftUlna.position.y = forearmLength * -1;
 								leftHumerus.add(leftUlna);
 								bones.push(leftUlna);
-							
+
 								var rightUlna = new THREE.Bone();
 								rightUlna.name = 'RightUlna';
 								rightUlna.position.y = forearmLength * -1;
 								rightHumerus.add(rightUlna);
 								bones.push(rightUlna);
-				
+
 				var leftArmTarget = new THREE.Bone();
 				leftArmTarget.name = 'LeftArmTarget';
 				leftArmTarget.position.x = bodyWidth * 0.5;
 				character.add(leftArmTarget);
 				bones.push(leftArmTarget);
 				character.leftArmTarget = leftArmTarget;
-				
+
 				var rightArmTarget = new THREE.Bone();
 				rightArmTarget.name = 'RightArmTarget';
 				rightArmTarget.position.x = bodyWidth * -0.5;
 				character.add(rightArmTarget);
 				bones.push(rightArmTarget);
 				character.rightArmTarget = rightArmTarget;
-				
+
 				var leftLegTarget = new THREE.Bone();
 				leftLegTarget.name = 'LeftLegTarget';
 				leftLegTarget.position.x = thighGap * 0.5;
 				character.add(leftLegTarget);
 				bones.push(leftLegTarget);
 				character.leftLegTarget = leftLegTarget;
-				
+
 				var rightLegTarget = new THREE.Bone();
 				rightLegTarget.name = 'RightLegTarget';
 				rightLegTarget.position.x = thighGap * -0.5;
 				character.add(rightLegTarget);
 				bones.push(rightLegTarget);
 				character.rightLegTarget = rightLegTarget;
-				
+
 				addIk(leftArmTarget, leftUlna, [
 					{ bone: leftHumerus, limitation: new THREE.Vector3(-1, 0, 0) },
 					{ bone: leftClavicle },
 				], 1);
-				
+
 				addIk(rightArmTarget, rightUlna, [
 					{ bone: rightHumerus, limitation: new THREE.Vector3(-1, 0, 0) },
 					{ bone: rightClavicle },
 				], 1);
-				
+
 				addIk(leftLegTarget, leftTibia, [
 					{ bone: leftFemur, limitation: new THREE.Vector3(1, 0, 0) },
 					{ bone: leftHip },
 				], 10);
-				
+
 				addIk(rightLegTarget, rightTibia, [
 					{ bone: rightFemur, limitation: new THREE.Vector3(1, 0, 0) },
 					{ bone: rightHip },
 				], 10);
-				
+
 				// body
 				addGeometry(new THREE.BoxGeometry(bodyWidth, bodyHeight, bodyDepth), sacrum, new THREE.Matrix4().compose(
 					new THREE.Vector3(0, bodyHeight * 0.5, 0),
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// left-thigh
 				addGeometry(new THREE.SphereGeometry(thighRadius), leftHip, new THREE.Matrix4().compose(
 					new THREE.Vector3(thighGap * 0.5, 0, 0),
@@ -547,7 +547,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// right-thigh
 				addGeometry(new THREE.SphereGeometry(thighRadius), rightHip, new THREE.Matrix4().compose(
 					new THREE.Vector3(thighGap * -0.5, 0, 0),
@@ -559,7 +559,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// left-calf
 				addGeometry(new THREE.SphereGeometry(calfRadius), leftFemur, new THREE.Matrix4().compose(
 					new THREE.Vector3(thighGap * 0.5, thighLength * -1, 0),
@@ -571,7 +571,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// right-calf
 				addGeometry(new THREE.SphereGeometry(calfRadius), rightFemur, new THREE.Matrix4().compose(
 					new THREE.Vector3(thighGap * -0.5, thighLength * -1, 0),
@@ -583,7 +583,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// left-upperarm
 				addGeometry(new THREE.SphereGeometry(upperarmRadius), leftClavicle, new THREE.Matrix4().compose(
 					new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius, 0),
@@ -595,7 +595,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// right-upperarm
 				addGeometry(new THREE.SphereGeometry(upperarmRadius), rightClavicle, new THREE.Matrix4().compose(
 					new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius, 0),
@@ -607,7 +607,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// left-forearm
 				addGeometry(new THREE.SphereGeometry(forearmRadius), leftHumerus, new THREE.Matrix4().compose(
 					new THREE.Vector3(bodyWidth * 0.5, bodyHeight - upperarmRadius - upperarmLength, 0),
@@ -619,7 +619,7 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				// right-forearm
 				addGeometry(new THREE.SphereGeometry(forearmRadius), rightHumerus, new THREE.Matrix4().compose(
 					new THREE.Vector3(bodyWidth * -0.5, bodyHeight - upperarmRadius - upperarmLength, 0),
@@ -631,10 +631,10 @@
 					new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0, 'XYZ')),
 					new THREE.Vector3(1, 1, 1)
 				));
-				
+
 				character.add(root);
 				character.bind(new THREE.Skeleton(bones));
-				
+
 				function addGeometry(geometry, bone, matrix) {
 					character.geometry.merge(geometry, matrix);
 					for (var i = 0; i < geometry.vertices.length; i++) {
@@ -642,9 +642,9 @@
 						character.geometry.skinWeights.push(new THREE.Vector4(1, 0, 0, 0));
 					}
 				}
-				
+
 				function addIk(target, effector, links, iteration, minAngle, maxAngle) {
-					
+
 					var ik = {
 						target: bones.indexOf(target),
 						effector: bones.indexOf(effector),
@@ -653,14 +653,14 @@
 						maxAngle: maxAngle,
 						links: [],
 					};
-					
+
 					for (var i = 0; i < links.length; i++)
 						ik.links.push({
 							enabled: links[i].enabled,
 							limitation: links[i].limitation,
 							index: bones.indexOf(links[i].bone),
 						});
-					
+
 					iks.push(ik);
 				}
 			}
